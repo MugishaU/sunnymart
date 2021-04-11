@@ -1,9 +1,11 @@
+import Dependencies._
+
 name := """sunnymart"""
 organization := "com.mugishau"
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala).withDependencies
 
 scalaVersion := "2.13.3"
 
