@@ -6,3 +6,5 @@ target
 /.project
 /.settings
 /RUNNING_PID
+/credentials
+.DS_Store
