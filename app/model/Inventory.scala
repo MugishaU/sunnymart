@@ -4,10 +4,13 @@ final case class Item(
     id: String,
     name: String,
     category: ItemCategory,
+    details: List[ItemDetail],
     price: Int,
     essentialStatus: Boolean,
     quantity: Int
 )
+
+final case class ItemDetail(key: String, value: String)
 
 final case class Inventory(items: List[Item])
 
