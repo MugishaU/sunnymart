@@ -8,3 +8,4 @@ target
 /RUNNING_PID
 /credentials
 .DS_Store
+/.bsp
