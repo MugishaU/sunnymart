@@ -1,4 +1,4 @@
-package model
+package model.domain
 
 final case class Name(
     title: String,
