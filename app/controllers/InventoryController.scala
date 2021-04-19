@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import model.api.Inventory
+import model.api.ApiInventory
 import play.api.libs.json._
 
 import javax.inject.{Inject, Singleton}
@@ -13,30 +13,15 @@ class InventoryController @Inject() (
 )(implicit ex: ExecutionContext)
     extends AbstractController(cc) {
 
-  def handle(request: Request[AnyContent]): Result = {
-    request.body.asJson
-      .map { json =>
-        json
-          .validate[Inventory]
-          .map(_ => Ok("create inventory"))
-          .recoverTotal { _ =>
-            BadRequest(s"Malformed Request")
-          }
-      }
-      .getOrElse {
-        BadRequest("No Request Body Found")
-      }
-  }
-  //todo Make JSON to be validated insertable (i.e. not all Inventory validation)
-//todo Be able to add a custom function on the "okay" route to do whatever you want
-// rename handle method
   def createInventory: Action[AnyContent] = {
-    Action { request => handle(request) }
+    Action { request =>
+      handleRequestBody(request, _ => Ok("create inventory"))
+    }
   }
 
   def updateInventoryItem(itemId: String): Action[AnyContent] =
-    Action {
-      Ok(s"UPDATE item-id: $itemId")
+    Action { request =>
+      handleRequestBody(request, _ => Ok(s"UPDATE item-id: $itemId"))
     }
 
   def getInventoryItem(
@@ -61,4 +46,22 @@ class InventoryController @Inject() (
     Action {
       Ok(s"DELETE: item-id: $itemId")
     }
+
+  def handleRequestBody(
+      request: Request[AnyContent],
+      successResponse: ApiInventory => Result
+  ): Result = {
+    request.body.asJson
+      .map { json =>
+        json
+          .validate[ApiInventory]
+          .map(x => successResponse(x))
+          .recoverTotal { _ =>
+            BadRequest(s"Malformed Request")
+          }
+      }
+      .getOrElse {
+        BadRequest("No JSON Request Body Found")
+      }
+  }
 }
