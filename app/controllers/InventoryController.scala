@@ -2,10 +2,11 @@ package controllers
 
 import play.api.mvc._
 import model.api.ApiInventory
-import play.api.libs.json._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
+
+import Helpers.handleRequestBody
 
 @Singleton
 class InventoryController @Inject() (
@@ -15,13 +16,16 @@ class InventoryController @Inject() (
 
   def createInventory: Action[AnyContent] = {
     Action { request =>
-      handleRequestBody(request, _ => Ok("create inventory"))
+      handleRequestBody[ApiInventory](request, _ => Ok("create inventory"))
     }
   }
 
   def updateInventoryItem(itemId: String): Action[AnyContent] =
     Action { request =>
-      handleRequestBody(request, _ => Ok(s"UPDATE item-id: $itemId"))
+      handleRequestBody[ApiInventory](
+        request,
+        _ => Ok(s"UPDATE item-id: $itemId")
+      )
     }
 
   def getInventoryItem(
@@ -46,22 +50,4 @@ class InventoryController @Inject() (
     Action {
       Ok(s"DELETE: item-id: $itemId")
     }
-
-  def handleRequestBody(
-      request: Request[AnyContent],
-      successResponse: ApiInventory => Result
-  ): Result = {
-    request.body.asJson
-      .map { json =>
-        json
-          .validate[ApiInventory]
-          .map(x => successResponse(x))
-          .recoverTotal { _ =>
-            BadRequest(s"Malformed Request")
-          }
-      }
-      .getOrElse {
-        BadRequest("No JSON Request Body Found")
-      }
-  }
 }

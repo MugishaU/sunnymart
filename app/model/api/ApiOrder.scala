@@ -1,10 +1,9 @@
 package model.api
 import play.api.libs.json.{Json, Reads}
-import java.util.Date
 
 final case class ApiOrder(
     customerId: String,
-    delivery: ApiDeliverySlotStatus,
+    delivery: ApiDelivery,
     orderSelections: List[ApiItemSelection],
     billingAddress: Option[ApiAddress]
 )
@@ -15,9 +14,8 @@ final case class ApiDelivery(
 )
 
 final case class ApiDeliverySlot(
-    date: Date,
-    hour: Int,
-    availability: String
+    date: String,
+    hour: Int
 )
 
 final case class ApiOrderStatus(orderStatus: String)
@@ -27,8 +25,8 @@ case object ApiOrder {
 }
 
 case object ApiDelivery {
-  implicit val adr: Reads[ApiDeliverySlotStatus] =
-    Json.reads[ApiDeliverySlotStatus]
+  implicit val adr: Reads[ApiDelivery] =
+    Json.reads[ApiDelivery]
 }
 
 case object ApiDeliverySlot {

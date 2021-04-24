@@ -5,6 +5,9 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
+import model.api.ApiDeliverySlotStatus
+import Helpers.handleRequestBody
+
 @Singleton
 class DeliveryController @Inject() (
     cc: ControllerComponents
@@ -44,7 +47,10 @@ class DeliveryController @Inject() (
   def updateDeliverySlotStatus(
       slotId: String
   ): Action[AnyContent] =
-    Action {
-      Ok(s"UPDATE: slot-id: $slotId")
+    Action { request =>
+      handleRequestBody[ApiDeliverySlotStatus](
+        request,
+        _ => Ok(s"UPDATE: slot-id: $slotId")
+      )
     }
 }

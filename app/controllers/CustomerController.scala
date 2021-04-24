@@ -5,6 +5,9 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
+import controllers.Helpers.handleRequestBody
+import model.api.{ApiCustomer, ApiPaymentInfo}
+
 @Singleton
 class CustomerController @Inject() (
     cc: ControllerComponents
@@ -12,18 +15,24 @@ class CustomerController @Inject() (
     extends AbstractController(cc) {
 
   def createCustomer: Action[AnyContent] =
-    Action {
-      Ok("customer created")
+    Action { request =>
+      handleRequestBody[ApiCustomer](request, _ => Ok("customer created"))
     }
 
   def createPaymentDetails(customerId: String): Action[AnyContent] =
-    Action {
-      Ok(s"Payment Details, customer-id: $customerId")
+    Action { request =>
+      handleRequestBody[ApiPaymentInfo](
+        request,
+        _ => Ok(s"Payment Details, customer-id: $customerId")
+      )
     }
 
   def editCustomer(customerId: String): Action[AnyContent] =
-    Action {
-      Ok(s"EDIT: customer-id: $customerId")
+    Action { request =>
+      handleRequestBody[ApiCustomer](
+        request,
+        _ => Ok(s"EDIT: customer-id: $customerId")
+      )
     }
 
   def deleteCustomer(

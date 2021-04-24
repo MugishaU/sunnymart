@@ -8,6 +8,9 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 
+import model.api.{ApiShoppingCart, ApiItemSelection, ApiUpdateQuantity}
+import Helpers.handleRequestBody
+
 @Singleton
 class CartController @Inject() (
     cc: ControllerComponents
@@ -15,21 +18,24 @@ class CartController @Inject() (
     extends AbstractController(cc) {
 
   def createCart: Action[AnyContent] =
-    Action {
-      Ok("cart created")
+    Action { request =>
+      handleRequestBody[ApiShoppingCart](request, _ => Ok("cart created"))
     }
 
   def addItemSelection(cartId: String): Action[AnyContent] =
-    Action {
-      Ok(s"cart-id: $cartId")
+    Action { request =>
+      handleRequestBody[ApiItemSelection](request, _ => Ok(s"cart-id: $cartId"))
     }
 
   def updateItemSelection(
       cartId: String,
       cartItemId: String
   ): Action[AnyContent] =
-    Action {
-      Ok(s"UPDATE: cart-id: $cartId, cart-item-id: $cartItemId")
+    Action { request =>
+      handleRequestBody[ApiUpdateQuantity](
+        request,
+        _ => Ok(s"UPDATE: cart-id: $cartId, cart-item-id: $cartItemId")
+      )
     }
 
   def deleteItemSelection(

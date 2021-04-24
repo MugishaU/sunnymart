@@ -5,6 +5,9 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
+import model.api.{ApiOrder, ApiOrderStatus}
+import Helpers.handleRequestBody
+
 @Singleton
 class OrderController @Inject() (
     cc: ControllerComponents
@@ -12,8 +15,8 @@ class OrderController @Inject() (
     extends AbstractController(cc) {
 
   def createOrder: Action[AnyContent] =
-    Action {
-      Ok("order created")
+    Action { request =>
+      handleRequestBody[ApiOrder](request, _ => Ok("order created"))
     }
 
   def getOrder(orderId: String): Action[AnyContent] =
@@ -24,15 +27,21 @@ class OrderController @Inject() (
   def updateOrder(
       orderId: String
   ): Action[AnyContent] =
-    Action {
-      Ok(s"UPDATE: order-id: $orderId")
+    Action { request =>
+      handleRequestBody[ApiOrder](
+        request,
+        _ => Ok(s"UPDATE: order-id: $orderId")
+      )
     }
 
   def updateOrderStatus(
       orderId: String
   ): Action[AnyContent] =
-    Action {
-      Ok(s"UPDATE: order status, order-id: $orderId")
+    Action { request =>
+      handleRequestBody[ApiOrderStatus](
+        request,
+        _ => Ok(s"UPDATE: order status, order-id: $orderId")
+      )
     }
 
   def updateOrderComplete(
