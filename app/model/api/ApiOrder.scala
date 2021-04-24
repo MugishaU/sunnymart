@@ -22,14 +22,6 @@ final case class ApiDeliverySlot(
 
 final case class ApiOrderStatus(orderStatus: String)
 
-final case class ApiAddress(
-    line1: String,
-    line2: Option[String],
-    county: Option[String],
-    city: String,
-    postcode: String
-)
-
 case object ApiOrder {
   implicit val apr: Reads[ApiOrder] = Json.reads[ApiOrder]
 }
@@ -41,10 +33,6 @@ case object ApiDelivery {
 
 case object ApiDeliverySlot {
   implicit val adsr: Reads[ApiDeliverySlot] = Json.reads[ApiDeliverySlot]
-}
-
-case object ApiAddress {
-  implicit val aar: Reads[ApiAddress] = Json.reads[ApiAddress]
 }
 
 case object ApiOrderStatus {
