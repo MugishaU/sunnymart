@@ -2,24 +2,29 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-POST        /inventory/items                        controllers.InventoryController.createInventory
-GET         /inventory/items                        controllers.InventoryController.getInventoryItem(itemId: Option[String])
-PUT         /inventory/items/:itemId                controllers.InventoryController.updateInventoryItem(itemId)
-DELETE      /inventory/items/:itemId                controllers.InventoryController.deleteInventoryItem(itemId)
+POST        /inventory/items                            controllers.InventoryController.createInventory
+GET         /inventory/items                            controllers.InventoryController.getInventoryItem(itemId: Option[String])
+PUT         /inventory/items/:itemId                    controllers.InventoryController.updateInventoryItem(itemId)
+DELETE      /inventory/items/:itemId                    controllers.InventoryController.deleteInventoryItem(itemId)
 
-POST        /carts                                  controllers.CartController.createCart
-POST        /carts/:cartId/items                    controllers.CartController.addItemSelection(cartId)
-PUT         /carts/:cartId/items/:cartItemId        controllers.CartController.updateItemSelection(cartId, cartItemId)
-DELETE      /carts/:cartId/items/:cartItemId        controllers.CartController.deleteItemSelection(cartId, cartItemId)
+POST        /carts                                      controllers.CartController.createCart
+POST        /carts/:cartId/items                        controllers.CartController.addItemSelection(cartId)
+PUT         /carts/:cartId/items/:cartItemId            controllers.CartController.updateItemSelection(cartId, cartItemId)
+DELETE      /carts/:cartId/items/:cartItemId            controllers.CartController.deleteItemSelection(cartId, cartItemId)
 
-POST        /orders                                 controllers.OrderController.createOrder
-GET         /orders/:orderId                        controllers.OrderController.getOrder(orderId)
-GET         /orders/:orderId/receipt                controllers.OrderController.getReceipt(orderId)
-PUT         /orders/:orderId                        controllers.OrderController.updateOrder(orderId)
-PUT         /orders/:orderId/status                 controllers.OrderController.updateOrderStatus(orderId)
-PUT         /orders/:orderId/complete               controllers.OrderController.updateOrderComplete(orderId)
-DELETE      /orders/:orderId                        controllers.OrderController.deleteOrder(orderId)
+POST        /orders                                     controllers.OrderController.createOrder
+GET         /orders/:orderId                            controllers.OrderController.getOrder(orderId)
+GET         /orders/:orderId/receipt                    controllers.OrderController.getReceipt(orderId)
+PUT         /orders/:orderId                            controllers.OrderController.updateOrder(orderId)
+PUT         /orders/:orderId/status                     controllers.OrderController.updateOrderStatus(orderId)
+PUT         /orders/:orderId/complete                   controllers.OrderController.updateOrderComplete(orderId)
+DELETE      /orders/:orderId                            controllers.OrderController.deleteOrder(orderId)
 
-GET         /delivery/slots/available               controllers.DeliveryController.getAvailableSlots
-GET         /delivery/slots/booked                  controllers.DeliveryController.getDeliverySchedule(date: Option[String], location: Option[String])
-PUT         /delivery/slots/:slotId/status          controllers.DeliveryController.updateDeliverySlotStatus(slotId)
+GET         /delivery/slots/available                   controllers.DeliveryController.getAvailableSlots
+GET         /delivery/slots/booked                      controllers.DeliveryController.getDeliverySchedule(date: Option[String], location: Option[String])
+PUT         /delivery/slots/:slotId/status              controllers.DeliveryController.updateDeliverySlotStatus(slotId)
+
+POST        /customers                                  controllers.CustomerController.createCustomer
+POST        /customers/:customerId/payment-details      controllers.CustomerController.createPaymentDetails(customerId)
+PUT         /customers/:customerId                      controllers.CustomerController.editCustomer(customerId)
+DELETE      /customers/:customerId                      controllers.CustomerController.deleteCustomer(customerId)
