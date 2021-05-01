@@ -9,8 +9,8 @@ DELETE      /inventory/items/:itemId                    controllers.InventoryCon
 
 POST        /carts                                      controllers.CartController.createCart
 POST        /carts/:cartId/items                        controllers.CartController.addItemSelection(cartId)
-PUT         /carts/:cartId/items/:cartItemId            controllers.CartController.updateItemSelection(cartId, cartItemId)
-DELETE      /carts/:cartId/items/:cartItemId            controllers.CartController.deleteItemSelection(cartId, cartItemId)
+PUT         /carts/:cartId/items/:itemId                controllers.CartController.updateItemSelection(cartId, itemId)
+DELETE      /carts/:cartId/items/:itemId                controllers.CartController.deleteItemSelection(cartId, itemId)
 
 POST        /orders                                     controllers.OrderController.createOrder
 GET         /orders/:orderId                            controllers.OrderController.getOrder(orderId)
