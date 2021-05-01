@@ -16,7 +16,10 @@ class InventoryController @Inject() (
 
   def createInventory: Action[AnyContent] = {
     Action { request =>
-      handleRequestBody[ApiInventory](request, _ => Ok("create inventory"))
+      handleRequestBody[ApiInventory](
+        request,
+        (x, Nil) => Ok("create inventory")
+      )
     }
   }
 
@@ -24,7 +27,7 @@ class InventoryController @Inject() (
     Action { request =>
       handleRequestBody[ApiInventory](
         request,
-        _ => Ok(s"UPDATE item-id: $itemId")
+        (x, Nil) => Ok(s"UPDATE item-id: $itemId")
       )
     }
 

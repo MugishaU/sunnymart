@@ -16,14 +16,17 @@ class CustomerController @Inject() (
 
   def createCustomer: Action[AnyContent] =
     Action { request =>
-      handleRequestBody[ApiCustomer](request, _ => Ok("customer created"))
+      handleRequestBody[ApiCustomer](
+        request,
+        (x, Nil) => Ok("customer created")
+      )
     }
 
   def createPaymentDetails(customerId: String): Action[AnyContent] =
     Action { request =>
       handleRequestBody[ApiPaymentInfo](
         request,
-        _ => Ok(s"Payment Details, customer-id: $customerId")
+        (x, Nil) => Ok(s"Payment Details, customer-id: $customerId")
       )
     }
 
@@ -31,7 +34,7 @@ class CustomerController @Inject() (
     Action { request =>
       handleRequestBody[ApiCustomer](
         request,
-        _ => Ok(s"EDIT: customer-id: $customerId")
+        (x, Nil) => Ok(s"EDIT: customer-id: $customerId")
       )
     }
 

@@ -16,7 +16,7 @@ class OrderController @Inject() (
 
   def createOrder: Action[AnyContent] =
     Action { request =>
-      handleRequestBody[ApiOrder](request, _ => Ok("order created"))
+      handleRequestBody[ApiOrder](request, (x, Nil) => Ok("order created"))
     }
 
   def getOrder(orderId: String): Action[AnyContent] =
@@ -30,7 +30,7 @@ class OrderController @Inject() (
     Action { request =>
       handleRequestBody[ApiOrder](
         request,
-        _ => Ok(s"UPDATE: order-id: $orderId")
+        (x, Nil) => Ok(s"UPDATE: order-id: $orderId")
       )
     }
 
@@ -40,7 +40,7 @@ class OrderController @Inject() (
     Action { request =>
       handleRequestBody[ApiOrderStatus](
         request,
-        _ => Ok(s"UPDATE: order status, order-id: $orderId")
+        (x, Nil) => Ok(s"UPDATE: order status, order-id: $orderId")
       )
     }
 

@@ -50,7 +50,7 @@ class DeliveryController @Inject() (
     Action { request =>
       handleRequestBody[ApiDeliverySlotStatus](
         request,
-        _ => Ok(s"UPDATE: slot-id: $slotId")
+        (x, Nil) => Ok(s"UPDATE: slot-id: $slotId")
       )
     }
 }

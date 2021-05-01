@@ -1,6 +1,7 @@
 package model.domain
+import play.api.libs.json.{Json, OWrites}
 
-import java.util.Date
+import java.time.LocalDateTime
 
 final case class ItemSelection(
     itemId: String,
@@ -12,5 +13,13 @@ final case class ShoppingCart(
     customerId: String,
     cartSelections: List[ItemSelection],
     cartCost: Int,
-    lastActive: Date
+    lastActive: LocalDateTime
 )
+
+object ItemSelection {
+  implicit val isw: OWrites[ItemSelection] = Json.writes[ItemSelection]
+}
+
+object ShoppingCart {
+  implicit val scw: OWrites[ShoppingCart] = Json.writes[ShoppingCart]
+}
