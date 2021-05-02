@@ -7,8 +7,8 @@ import play.api.mvc.Results.BadRequest
 case object Helpers {
   def handleRequestBody[T](
       request: Request[AnyContent],
-      response: (T, List[String]) => Result,
-      params: List[String] = Nil
+      response: (T, Map[String, String]) => Result,
+      params: Map[String, String] = Map.empty
   )(implicit reads: Reads[T]): Result = {
     request.body.asJson
       .map { json =>

@@ -34,7 +34,7 @@ class CartController @Inject() (
       handleRequestBody[ApiItemSelection](
         request,
         dummyAdd,
-        List(cartId)
+        Map("cartId" -> cartId)
       )
     }
 
@@ -46,7 +46,7 @@ class CartController @Inject() (
       handleRequestBody[ApiUpdateQuantity](
         request,
         dummyUpdate,
-        List(cartId, itemId)
+        Map("cartId" -> cartId, "itemId" -> itemId)
       )
     }
 
@@ -58,7 +58,10 @@ class CartController @Inject() (
       dummyDelete(cartId, itemId)
     }
 
-  def dummyCreate(parsedBody: ApiShoppingCart, params: List[String]): Result = { //TODO better way? Seems not
+  def dummyCreate(
+      parsedBody: ApiShoppingCart,
+      params: Map[String, String]
+  ): Result = { //TODO better way? Seems not
     val cart = ShoppingCart(
       id = UUID.randomUUID.toString,
       customerId = parsedBody.customerId,
@@ -71,9 +74,12 @@ class CartController @Inject() (
     Ok(Json.toJson(cart))
   }
 
-  def dummyAdd(parsedBody: ApiItemSelection, params: List[String]): Result = {
+  def dummyAdd(
+      parsedBody: ApiItemSelection,
+      params: Map[String, String]
+  ): Result = {
 
-    val cartId = params.head
+    val cartId = params("cartId")
 
     val cart = ShoppingCart(
       id = cartId,
@@ -92,11 +98,11 @@ class CartController @Inject() (
 
   def dummyUpdate(
       parsedBody: ApiUpdateQuantity,
-      params: List[String]
+      params: Map[String, String]
   ): Result = {
 
-    val cartId = params.head
-    val itemId = params(1)
+    val cartId = params("cartId")
+    val itemId = params("itemId")
 
     val cart = ShoppingCart(
       id = cartId,
