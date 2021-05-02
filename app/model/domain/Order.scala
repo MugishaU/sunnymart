@@ -3,6 +3,7 @@ package model.domain
 import java.util.Date
 
 final case class DeliverySlot(
+    id: String,
     date: Date,
     hour: Int,
     availability: DeliverySlotStatus
@@ -14,7 +15,7 @@ final case class Delivery(
 )
 
 final case class DeliverySchedule(
-    deliverySlots: List[DeliverySlot]
+    orders: List[Order]
 )
 
 final case class Order(
@@ -37,4 +38,4 @@ case object OrderCancelled extends OrderStatus
 
 sealed trait DeliverySlotStatus //todo extend all options
 case object Available extends DeliverySlotStatus
-case object Booked extends DeliverySlotStatus
+case object Unavailable extends DeliverySlotStatus
