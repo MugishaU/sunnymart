@@ -4,9 +4,22 @@ import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-
 import model.api.ApiDeliverySlotStatus
 import Helpers.handleRequestBody
+import model.domain.{
+  Address,
+  Available,
+  Delivery,
+  DeliverySchedule,
+  DeliverySlot,
+  ItemSelection,
+  Order,
+  OrderPlaced,
+  Unavailable
+}
+import play.api.libs.json.Json
+
+import java.util.Date
 
 @Singleton
 class DeliveryController @Inject() (
@@ -16,31 +29,15 @@ class DeliveryController @Inject() (
 
   def getAvailableSlots: Action[AnyContent] =
     Action {
-      Ok("available delivery slots")
+      dummyGetSlots()
     }
 
   def getDeliverySchedule(
       date: Option[String],
       location: Option[String]
   ): Action[AnyContent] = {
-
-    (date, location) match {
-      case (Some(dateValue), Some(locationValue)) =>
-        Action {
-          Ok(s"deliveries, date: $dateValue, location: $locationValue")
-        }
-      case (Some(dateValue), None) =>
-        Action {
-          Ok(s"deliveries, date only: $dateValue")
-        }
-      case (None, Some(locationValue)) =>
-        Action {
-          Ok(s"deliveries, location only: $locationValue")
-        }
-      case (None, None) =>
-        Action {
-          Ok(s"all deliveries")
-        }
+    Action {
+      dummyGetDeliverySchedule(date, location)
     }
   }
 
@@ -50,7 +47,121 @@ class DeliveryController @Inject() (
     Action { request =>
       handleRequestBody[ApiDeliverySlotStatus](
         request,
-        (x, Nil) => Ok(s"UPDATE: slot-id: $slotId")
+        dummyUpdate,
+        Map("slotId" -> slotId)
       )
     }
+
+  def dummyGetSlots(): Result = {
+    val slot = DeliverySlot(
+      id = "id",
+      date = new Date(),
+      hour = 16,
+      availability = Available
+    )
+
+    Ok(
+      Json.toJson(
+        List(
+          slot,
+          slot.copy(id = "id2", hour = 19),
+          slot.copy(id = "id3", hour = 8)
+        )
+      )
+    )
+  }
+
+  def dummyGetDeliverySchedule(
+      date: Option[String],
+      location: Option[String]
+  ): Result = {
+    val deliverySlot = DeliverySlot(
+      id = "id",
+      date = new Date(),
+      hour = 16,
+      availability = Available
+    )
+
+    val delivery = Delivery(
+      deliverySlot = deliverySlot,
+      deliveryAddress = None
+    )
+
+    val order = Order(
+      orderStatus = OrderPlaced,
+      customerId = "customerId",
+      delivery = delivery,
+      orderItems = List.empty[ItemSelection],
+      totalCost = 1234,
+      billingAddress = None
+    )
+
+    val deliverySchedule = DeliverySchedule(
+      orders = List(
+        order,
+        order.copy(
+          customerId = "customerId2",
+          orderItems = List(ItemSelection(itemId = "item1", quantity = 5))
+        ),
+        order.copy(
+          customerId = "customerId3",
+          billingAddress = Some(
+            Address(
+              line1 = "line1",
+              line2 = None,
+              county = None,
+              city = "London",
+              postcode = "NW13 K46"
+            )
+          )
+        )
+      )
+    )
+
+    (date, location) match {
+      case (Some(dateValue), Some(locationValue)) =>
+        Ok(Json.toJson(deliverySchedule))
+      case (Some(dateValue), None) =>
+        Ok(s"deliveries, date only: $dateValue")
+      case (None, Some(locationValue)) =>
+        Ok(s"deliveries, location only: $locationValue")
+      case (None, None) =>
+        Ok(s"all deliveries")
+    }
+  }
+
+  def dummyUpdate(
+      parsedBody: ApiDeliverySlotStatus,
+      params: Map[String, String]
+  ): Result = {
+    val slotId = params("slotId")
+    val newStatus = parsedBody.deliverySlotStatus
+
+    newStatus match {
+      case "Available" =>
+        Ok(
+          Json.toJson(
+            DeliverySlot(
+              id = slotId,
+              date = new Date(),
+              hour = 15,
+              availability = Available
+            )
+          )
+        )
+      case "Unavailable" =>
+        Ok(
+          Json.toJson(
+            DeliverySlot(
+              id = slotId,
+              date = new Date(),
+              hour = 15,
+              availability = Unavailable
+            )
+          )
+        )
+      case _ =>
+        BadRequest(Json.toJson(Map("error" -> "Invalid Delivery Slot Status")))
+    }
+  }
 }
