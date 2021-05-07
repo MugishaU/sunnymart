@@ -16,11 +16,11 @@ case object Helpers {
           .validate[T]
           .map(x => response(x, params))
           .recoverTotal { _ =>
-            BadRequest(s"Malformed Request")
+            BadRequest(Json.toJson(Map("error" -> "Malformed Request")))
           }
       }
       .getOrElse {
-        BadRequest("No JSON Request Body Found")
+        BadRequest(Json.toJson(Map("error" -> "No JSON Request Body Found")))
       }
   }
 }
