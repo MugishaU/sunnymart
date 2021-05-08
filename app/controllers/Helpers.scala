@@ -3,6 +3,24 @@ package controllers
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
+import model.domain.{
+  BreadAndBakery,
+  Breakfast,
+  CannedGoods,
+  CleaningProducts,
+  Confectionary,
+  Dairy,
+  Drinks,
+  FruitAndVeg,
+  GrainsAndPasta,
+  Inventory,
+  Item,
+  ItemDetail,
+  MeatAndFish,
+  Miscellaneous,
+  PersonalCare,
+  ItemCategory
+}
 
 case object Helpers {
   def handleRequestBody[T](
@@ -22,5 +40,23 @@ case object Helpers {
       .getOrElse {
         BadRequest(Json.toJson(Map("error" -> "No JSON Request Body Found")))
       }
+  }
+
+  def getItemCategory(maybeCategory: String): Option[ItemCategory] = {
+    maybeCategory match {
+      case "BreadAndBakery"   => Some(BreadAndBakery)
+      case "Breakfast"        => Some(Breakfast)
+      case "Drinks"           => Some(Drinks)
+      case "Dairy"            => Some(Dairy)
+      case "CannedGoods"      => Some(CannedGoods)
+      case "FruitAndVeg"      => Some(FruitAndVeg)
+      case "MeatAndFish"      => Some(MeatAndFish)
+      case "PersonalCare"     => Some(PersonalCare)
+      case "Confectionary"    => Some(Confectionary)
+      case "GrainsAndPasta"   => Some(GrainsAndPasta)
+      case "CleaningProducts" => Some(CleaningProducts)
+      case "Miscellaneous"    => Some(Miscellaneous)
+      case _                  => None
+    }
   }
 }
