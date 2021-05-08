@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-POST        /inventory/items                            controllers.InventoryController.createInventory
+POST        /inventory/items                            controllers.InventoryController.createInventoryItem
 GET         /inventory/items                            controllers.InventoryController.getInventoryItem(itemId: Option[String])
 PUT         /inventory/items/:itemId                    controllers.InventoryController.updateInventoryItem(itemId)
 DELETE      /inventory/items/:itemId                    controllers.InventoryController.deleteInventoryItem(itemId)
