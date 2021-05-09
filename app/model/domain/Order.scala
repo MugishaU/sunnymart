@@ -32,8 +32,7 @@ final case class DeliverySchedule(
 sealed trait OrderStatus
 case object OrderPlaced extends OrderStatus
 case object OrderOutForDelivery extends OrderStatus
-case object OrderDelivered extends OrderStatus
-case object OrderCollected extends OrderStatus
+case object OrderComplete extends OrderStatus
 case object OrderFailed extends OrderStatus
 case object OrderCancelled extends OrderStatus
 
@@ -63,8 +62,7 @@ object OrderStatus {
     def writes(status: OrderStatus): JsValue = status match {
       case OrderPlaced         => Json.toJson("OrderPlaced")
       case OrderOutForDelivery => Json.toJson("OrderOutForDelivery")
-      case OrderDelivered      => Json.toJson("OrderDelivered")
-      case OrderCollected      => Json.toJson("OrderCollected")
+      case OrderComplete       => Json.toJson("OrderComplete")
       case OrderFailed         => Json.toJson("OrderFailed")
       case OrderCancelled      => Json.toJson("OrderCancelled")
     }

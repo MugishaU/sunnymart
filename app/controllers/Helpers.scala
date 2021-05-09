@@ -19,8 +19,7 @@ import model.domain.{
   MeatAndFish,
   Miscellaneous,
   OrderCancelled,
-  OrderCollected,
-  OrderDelivered,
+  OrderComplete,
   OrderFailed,
   OrderOutForDelivery,
   OrderPlaced,
@@ -71,8 +70,7 @@ case object Helpers {
     maybeStatus match {
       case "OrderPlaced"         => Some(OrderPlaced)
       case "OrderOutForDelivery" => Some(OrderOutForDelivery)
-      case "OrderDelivered"      => Some(OrderDelivered)
-      case "OrderCollected"      => Some(OrderCollected)
+      case "OrderComplete"       => Some(OrderComplete)
       case "OrderFailed"         => Some(OrderFailed)
       case "OrderCancelled"      => Some(OrderCancelled)
       case _                     => None
