@@ -5,7 +5,7 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.ApiDeliverySlotStatus
-import Helpers.handleRequestBody
+import Helpers.{handleRequestBody, getDeliverySlotStatus}
 import model.domain.{
   Address,
   Available,
@@ -14,8 +14,7 @@ import model.domain.{
   DeliverySlot,
   ItemSelection,
   Order,
-  OrderPlaced,
-  Unavailable
+  OrderPlaced
 }
 import play.api.libs.json.Json
 
@@ -135,33 +134,21 @@ class DeliveryController @Inject() (
       params: Map[String, String]
   ): Result = {
     val slotId = params("slotId")
-    val newStatus = parsedBody.deliverySlotStatus
+    val deliverySlotStatus = getDeliverySlotStatus(
+      parsedBody.deliverySlotStatus
+    )
 
-    newStatus match {
-      case "Available" =>
-        Ok(
-          Json.toJson(
-            DeliverySlot(
-              id = slotId,
-              date = new Date(),
-              hour = 15,
-              availability = Available
-            )
-          )
-        )
-      case "Unavailable" =>
-        Ok(
-          Json.toJson(
-            DeliverySlot(
-              id = slotId,
-              date = new Date(),
-              hour = 15,
-              availability = Unavailable
-            )
-          )
-        )
-      case _ =>
-        BadRequest(Json.toJson(Map("error" -> "Invalid Delivery Slot Status")))
+    if (deliverySlotStatus.isDefined) {
+      val deliverySlot = DeliverySlot(
+        id = slotId,
+        date = new Date(),
+        hour = 15,
+        availability = deliverySlotStatus.get
+      )
+      Ok(Json.toJson(deliverySlot))
+    } else {
+      BadRequest(Json.toJson(Map("error" -> "Invalid Delivery Slot Status")))
     }
   }
+
 }
