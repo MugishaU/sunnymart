@@ -17,7 +17,7 @@ final case class Address(
 )
 
 final case class Customer(
-    id: String, //todo UUID?
+    id: String,
     name: Name,
     address: Address
 )
