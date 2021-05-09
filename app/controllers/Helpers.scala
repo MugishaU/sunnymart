@@ -4,22 +4,29 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import model.domain.{
+  Available,
   BreadAndBakery,
   Breakfast,
   CannedGoods,
   CleaningProducts,
   Confectionary,
   Dairy,
+  DeliverySlotStatus,
   Drinks,
   FruitAndVeg,
   GrainsAndPasta,
-  Inventory,
-  Item,
-  ItemDetail,
+  ItemCategory,
   MeatAndFish,
   Miscellaneous,
+  OrderCancelled,
+  OrderCollected,
+  OrderDelivered,
+  OrderFailed,
+  OrderOutForDelivery,
+  OrderPlaced,
+  OrderStatus,
   PersonalCare,
-  ItemCategory
+  Unavailable
 }
 
 case object Helpers {
@@ -57,6 +64,26 @@ case object Helpers {
       case "CleaningProducts" => Some(CleaningProducts)
       case "Miscellaneous"    => Some(Miscellaneous)
       case _                  => None
+    }
+  }
+
+  def getOrderStatus(maybeStatus: String): Option[OrderStatus] = {
+    maybeStatus match {
+      case "OrderPlaced"         => Some(OrderPlaced)
+      case "OrderOutForDelivery" => Some(OrderOutForDelivery)
+      case "OrderDelivered"      => Some(OrderDelivered)
+      case "OrderCollected"      => Some(OrderCollected)
+      case "OrderFailed"         => Some(OrderFailed)
+      case "OrderCancelled"      => Some(OrderCancelled)
+      case _                     => None
+    }
+  }
+
+  def getDeliverySlotStatus(maybeStatus: String): Option[DeliverySlotStatus] = {
+    maybeStatus match {
+      case "Available"   => Some(Available)
+      case "Unavailable" => Some(Unavailable)
+      case _             => None
     }
   }
 }
