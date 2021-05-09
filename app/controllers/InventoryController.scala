@@ -1,9 +1,16 @@
 package controllers
 
 import play.api.mvc._
+import model.api.ApiItem
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
+
+import Helpers.{handleRequestBody, getItemCategory}
+import model.domain.{GrainsAndPasta, Inventory, Item, ItemDetail}
+import play.api.libs.json.Json
+
+import java.util.UUID
 
 @Singleton
 class InventoryController @Inject() (
@@ -11,36 +18,118 @@ class InventoryController @Inject() (
 )(implicit ex: ExecutionContext)
     extends AbstractController(cc) {
 
-  def createInventory: Action[AnyContent] =
-    Action {
-      Ok("create inventory")
+  def createInventoryItem: Action[AnyContent] = {
+    Action { request =>
+      handleRequestBody[ApiItem](
+        request,
+        dummyCreateInventoryItem
+      )
     }
+  }
 
   def updateInventoryItem(itemId: String): Action[AnyContent] =
-    Action {
-      Ok(s"UPDATE item-id: $itemId")
+    Action { request =>
+      handleRequestBody[ApiItem](
+        request,
+        dummyUpdateInventoryItem,
+        Map("itemId" -> itemId)
+      )
     }
 
   def getInventoryItem(
       itemId: Option[String] = None
   ): Action[AnyContent] = {
-
-    itemId match {
-      case Some(value) =>
-        Action {
-          Ok(s"GET: item-id: $value")
-        }
-      case None =>
-        Action {
-          Ok(s"GET: all inventory")
-        }
+    Action {
+      dummyGetInventory(itemId)
     }
-
   }
+
   def deleteInventoryItem(
       itemId: String
   ): Action[AnyContent] =
     Action {
-      Ok(s"DELETE: item-id: $itemId")
+      dummyDeleteInventoryItem(itemId)
     }
+
+  def dummyGetInventory(itemId: Option[String]): Result = {
+    val item = Item(
+      id = "id",
+      name = "rice",
+      category = GrainsAndPasta,
+      details = List(ItemDetail(header = "weight", content = "500g")),
+      price = 100,
+      essentialStatus = true,
+      quantity = 500
+    )
+
+    itemId match {
+      case Some(id) =>
+        Ok(Json.toJson(Inventory(List(item.copy(id = id)))))
+      case None =>
+        Ok(
+          Json.toJson(
+            Inventory(List(item, item.copy(id = "id2"), item.copy(id = "id3")))
+          )
+        )
+    }
+
+  }
+
+  def dummyCreateInventoryItem(
+      parsedBody: ApiItem,
+      params: Map[String, String]
+  ): Result = {
+
+    val itemCategory = getItemCategory(parsedBody.category)
+
+    if (itemCategory.isDefined) {
+      val item = Item(
+        id = UUID.randomUUID.toString,
+        name = parsedBody.name,
+        category = itemCategory.get,
+        details = parsedBody.details.map(detail =>
+          ItemDetail(detail.header, detail.content)
+        ),
+        price = parsedBody.price,
+        essentialStatus = parsedBody.essentialStatus,
+        quantity = parsedBody.quantity
+      )
+      Ok(Json.toJson(item))
+    } else {
+      BadRequest(Json.toJson(Map("error" -> "No Such Item Category")))
+    }
+  }
+
+  def dummyUpdateInventoryItem(
+      parsedBody: ApiItem,
+      params: Map[String, String]
+  ): Result = {
+    val itemId = params("itemId")
+    val itemCategory = getItemCategory(parsedBody.category)
+
+    if (itemCategory.isDefined) {
+      val item = Item(
+        id = itemId,
+        name = parsedBody.name,
+        category = itemCategory.get,
+        details = parsedBody.details.map(detail =>
+          ItemDetail(detail.header, detail.content)
+        ),
+        price = parsedBody.price,
+        essentialStatus = parsedBody.essentialStatus,
+        quantity = parsedBody.quantity
+      )
+      Ok(Json.toJson(item))
+    } else {
+      BadRequest(Json.toJson(Map("error" -> "No Such Item Category")))
+    }
+  }
+
+  def dummyDeleteInventoryItem(
+      itemId: String
+  ): Result = {
+    Ok(
+      Json.toJson(Map("message" -> s"Successful deletion of item-id: $itemId"))
+    )
+  }
 }
