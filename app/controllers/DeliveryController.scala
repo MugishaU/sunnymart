@@ -46,8 +46,7 @@ class DeliveryController @Inject() (
     Action { request =>
       handleRequestBody[ApiDeliverySlotStatus](
         request,
-        dummyUpdate,
-        Map("slotId" -> slotId)
+        dummyUpdate(_, Map("slotId" -> slotId))
       )
     }
 
@@ -138,16 +137,17 @@ class DeliveryController @Inject() (
       parsedBody.deliverySlotStatus
     )
 
-    if (deliverySlotStatus.isDefined) {
-      val deliverySlot = DeliverySlot(
-        id = slotId,
-        date = new Date(),
-        hour = 15,
-        availability = deliverySlotStatus.get
-      )
-      Ok(Json.toJson(deliverySlot))
-    } else {
-      BadRequest(Json.toJson(Map("error" -> "Invalid Delivery Slot Status")))
+    deliverySlotStatus match {
+      case Some(value) =>
+        val deliverySlot = DeliverySlot(
+          id = slotId,
+          date = new Date(),
+          hour = 15,
+          availability = deliverySlotStatus.get
+        )
+        Ok(Json.toJson(deliverySlot))
+      case None =>
+        BadRequest(Json.toJson(Map("error" -> "Invalid Delivery Slot Status")))
     }
   }
 
