@@ -45,8 +45,7 @@ class OrderController @Inject() (
     Action { request =>
       handleRequestBody[ApiOrder](
         request,
-        dummyUpdateOrder,
-        Map("orderId" -> orderId)
+        dummyUpdateOrder(_, Map("orderId" -> orderId))
       )
     }
 
@@ -56,8 +55,7 @@ class OrderController @Inject() (
     Action { request =>
       handleRequestBody[ApiOrderStatus](
         request,
-        dummyUpdateOrderStatus,
-        Map("orderId" -> orderId)
+        dummyUpdateOrderStatus(_, Map("orderId" -> orderId))
       )
     }
 
@@ -82,11 +80,7 @@ class OrderController @Inject() (
       dummyGetReceipt(orderId)
     }
 
-  def dummyCreateOrder(
-      parsedBody: ApiOrder,
-      params: Map[String, String]
-  ): Result = {
-
+  def dummyCreateOrder(parsedBody: ApiOrder): Result = {
     val deliverySlot = DeliverySlot(
       id = parsedBody.deliverySlotId,
       date = new Date(),
@@ -230,39 +224,40 @@ class OrderController @Inject() (
     val orderId = params("orderId")
     val orderStatus = getOrderStatus(parsedBody.orderStatus)
 
-    if (orderStatus.isDefined) {
-      val deliverySlot = DeliverySlot(
-        id = "id",
-        date = new Date(),
-        hour = 7,
-        availability = Unavailable
-      )
+    orderStatus match {
+      case Some(value) =>
+        val deliverySlot = DeliverySlot(
+          id = "id",
+          date = new Date(),
+          hour = 7,
+          availability = Unavailable
+        )
 
-      val address = Address(
-        line1 = "133 Park Road",
-        line2 = None,
-        county = None,
-        city = "Exeter",
-        postcode = "EX4 3GT"
-      )
+        val address = Address(
+          line1 = "133 Park Road",
+          line2 = None,
+          county = None,
+          city = "Exeter",
+          postcode = "EX4 3GT"
+        )
 
-      val delivery = Delivery(
-        deliverySlot = deliverySlot,
-        deliveryAddress = Some(address)
-      )
+        val delivery = Delivery(
+          deliverySlot = deliverySlot,
+          deliveryAddress = Some(address)
+        )
 
-      val order = Order(
-        orderStatus = orderStatus.get,
-        customerId = "customerId",
-        delivery = delivery,
-        orderItems = Nil,
-        totalCost = 0,
-        billingAddress = None
-      )
+        val order = Order(
+          orderStatus = orderStatus.get,
+          customerId = "customerId",
+          delivery = delivery,
+          orderItems = Nil,
+          totalCost = 0,
+          billingAddress = None
+        )
 
-      Ok(Json.toJson(order))
-    } else {
-      BadRequest(Json.toJson(Map("error" -> "No Such Order Status")))
+        Ok(Json.toJson(order))
+      case None =>
+        BadRequest(Json.toJson(Map("error" -> "No Such Order Status")))
     }
   }
 

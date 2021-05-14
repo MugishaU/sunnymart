@@ -31,14 +31,13 @@ import model.domain.{
 case object Helpers {
   def handleRequestBody[T](
       request: Request[AnyContent],
-      response: (T, Map[String, String]) => Result,
-      params: Map[String, String] = Map.empty
+      response: T => Result
   )(implicit reads: Reads[T]): Result = {
     request.body.asJson
       .map { json =>
         json
           .validate[T]
-          .map(x => response(x, params))
+          .map(x => response(x))
           .recoverTotal { _ =>
             BadRequest(Json.toJson(Map("error" -> "Malformed Request")))
           }

@@ -20,7 +20,6 @@ class CartController @Inject() (
     extends AbstractController(cc) {
 
   def createCart: Action[AnyContent] = {
-
     Action { request =>
       handleRequestBody[ApiShoppingCart](
         request,
@@ -33,8 +32,7 @@ class CartController @Inject() (
     Action { request =>
       handleRequestBody[ApiItemSelection](
         request,
-        dummyAdd,
-        Map("cartId" -> cartId)
+        dummyAdd(_, Map("cartId" -> cartId))
       )
     }
 
@@ -45,8 +43,7 @@ class CartController @Inject() (
     Action { request =>
       handleRequestBody[ApiUpdateQuantity](
         request,
-        dummyUpdate,
-        Map("cartId" -> cartId, "itemId" -> itemId)
+        dummyUpdate(_, Map("cartId" -> cartId, "itemId" -> itemId))
       )
     }
 
@@ -58,10 +55,7 @@ class CartController @Inject() (
       dummyDelete(cartId, itemId)
     }
 
-  def dummyCreate(
-      parsedBody: ApiShoppingCart,
-      params: Map[String, String]
-  ): Result = { //TODO better way? Seems not
+  def dummyCreate(parsedBody: ApiShoppingCart): Result = {
     val cart = ShoppingCart(
       id = UUID.randomUUID.toString,
       customerId = parsedBody.customerId,
@@ -78,7 +72,6 @@ class CartController @Inject() (
       parsedBody: ApiItemSelection,
       params: Map[String, String]
   ): Result = {
-
     val cartId = params("cartId")
 
     val cart = ShoppingCart(
@@ -100,7 +93,6 @@ class CartController @Inject() (
       parsedBody: ApiUpdateQuantity,
       params: Map[String, String]
   ): Result = {
-
     val cartId = params("cartId")
     val itemId = params("itemId")
 

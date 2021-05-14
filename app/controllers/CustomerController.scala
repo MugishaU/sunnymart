@@ -15,9 +15,7 @@ class CustomerController @Inject() (
 )(implicit ex: ExecutionContext)
     extends AbstractController(cc) {
 
-  def getCustomer(
-      customerId: String
-  ): Action[AnyContent] =
+  def getCustomer(customerId: String): Action[AnyContent] =
     Action {
       dummyGetCustomer(customerId)
     }
@@ -34,14 +32,11 @@ class CustomerController @Inject() (
     Action { request =>
       handleRequestBody[ApiCustomer](
         request,
-        dummyUpdateCustomer,
-        Map("customerId" -> customerId)
+        dummyUpdateCustomer(_, Map("customerId" -> customerId))
       )
     }
 
-  def deleteCustomer(
-      customerId: String
-  ): Action[AnyContent] =
+  def deleteCustomer(customerId: String): Action[AnyContent] =
     Action {
       dummyDeleteCustomer(customerId)
     }
@@ -58,8 +53,7 @@ class CustomerController @Inject() (
     Action { request =>
       handleRequestBody[ApiPaymentInfo](
         request,
-        dummyCreatePaymentDetails,
-        Map("customerId" -> customerId)
+        dummyCreatePaymentDetails(_, Map("customerId" -> customerId))
       )
     }
 
@@ -70,8 +64,10 @@ class CustomerController @Inject() (
     Action { request =>
       handleRequestBody[ApiPaymentInfo](
         request,
-        dummyUpdatePaymentDetails,
-        Map("customerId" -> customerId, "paymentId" -> paymentId)
+        dummyUpdatePaymentDetails(
+          _,
+          Map("customerId" -> customerId, "paymentId" -> paymentId)
+        )
       )
     }
 
@@ -121,10 +117,7 @@ class CustomerController @Inject() (
     Ok(Json.toJson(customer))
   }
 
-  def dummyCreateCustomer(
-      parsedBody: ApiCustomer,
-      params: Map[String, String]
-  ): Result = {
+  def dummyCreateCustomer(parsedBody: ApiCustomer): Result = {
     val customer =
       Customer(
         id = "new",
