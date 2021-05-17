@@ -1,13 +1,14 @@
 package controllers
 
 import play.api.mvc._
-import model.api.ApiItem
+import play.api.libs.json.Json
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import Helpers.{getItemCategory, handleRequestBody}
+import config.DynamoDb.getItem
 import model.domain.{GrainsAndPasta, Inventory, Item, ItemDetail}
-import play.api.libs.json.Json
+import model.api.ApiItem
 
 import java.util.UUID
 
@@ -57,7 +58,18 @@ class InventoryController @Inject() (
 
     itemId match {
       case Some(id) =>
-        Ok(Json.toJson(Inventory(List(item.copy(id = id)))))
+        val maybeItem = getItem(
+          primaryKeyName = "id",
+          primaryKeyValue = id,
+          tableName = "sunnymart-inventory"
+        )
+        maybeItem match {
+          case Some(value) => Ok(Json.toJson(value))
+          case None =>
+            NotFound(
+              Json.toJson(Map("message" -> "No item, See logs for detail"))
+            )
+        }
       case None =>
         Ok(
           Json.toJson(
