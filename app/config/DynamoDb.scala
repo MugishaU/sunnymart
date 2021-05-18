@@ -1,13 +1,13 @@
 package config
 
 import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import com.amazonaws.services.dynamodbv2.{
+  AmazonDynamoDB,
+  AmazonDynamoDBClientBuilder
+}
 import com.amazonaws.services.dynamodbv2.document.ItemUtils
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
-import controllers.Helpers.getItemCategory
-import model.aws.AwsItem
-import model.domain.Item
 import play.api.libs.json._
 
 import scala.collection.immutable.HashMap
@@ -15,13 +15,23 @@ import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 object DynamoDb {
+  val dynamoDbClient: AmazonDynamoDB = AmazonDynamoDBClientBuilder.defaultClient
 
-  def getItem(
+  private def createError[T](
+      errorMessage: String,
+      statusCode: Int
+  ): Either[Map[String, String], T] = {
+    val error =
+      Map("errorMessage" -> errorMessage, "statusCode" -> statusCode.toString)
+    Left(error)
+  }
+
+  def getItem[T](
       primaryKeyName: String,
       primaryKeyValue: String,
       tableName: String
-  ): Option[Item] = {
-    val dynamoDbClient = AmazonDynamoDBClientBuilder.defaultClient
+  )(implicit reads: Reads[T]): Either[Map[String, String], T] = {
+
     val key = HashMap(
       primaryKeyName -> new AttributeValue(primaryKeyValue)
     ).asJava
@@ -35,43 +45,23 @@ object DynamoDb {
 
     item match {
       case Failure(e: AmazonServiceException) =>
-        println(e.getErrorMessage)
-        None
+        createError(e.getErrorMessage, e.getStatusCode)
 
       case Failure(_) =>
-        println("Unknown Error")
-        None
+        createError("Unknown error on database fetch", 500)
 
       case Success(None) =>
-        println("No Item")
-        None
+        createError("No such item found", 404)
+
       case Success(Some(value)) =>
         val jsonString = ItemUtils.toItem(value).toJSON
-        val triedAwsItem = Try(Json.parse(jsonString).as[AwsItem])
+        val awsItem = Try(Json.parse(jsonString).as[T])
 
-        triedAwsItem match {
+        awsItem match {
           case Failure(exception) =>
-            println(s"Failure to parse DynamoDb item\n\nFull Error: $exception")
-            None
-          case Success(awsItem) =>
-            val maybeCategory = getItemCategory(awsItem.category)
-            maybeCategory match {
-              case Some(category) =>
-                Some(
-                  Item(
-                    id = awsItem.id,
-                    name = awsItem.name,
-                    category = category,
-                    details = awsItem.details,
-                    price = awsItem.price,
-                    essentialStatus = awsItem.essentialStatus,
-                    quantity = awsItem.quantity
-                  )
-                )
-              case None =>
-                println("No such item category")
-                None
-            }
+            println(exception)
+            createError("Failure to parse DynamoDB item", 500)
+          case Success(awsItem) => Right(awsItem)
         }
     }
   }

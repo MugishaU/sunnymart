@@ -9,6 +9,7 @@ import Helpers.{getItemCategory, handleRequestBody}
 import config.DynamoDb.getItem
 import model.domain.{GrainsAndPasta, Inventory, Item, ItemDetail}
 import model.api.ApiItem
+import model.aws.AwsItem
 
 import java.util.UUID
 
@@ -58,16 +59,35 @@ class InventoryController @Inject() (
 
     itemId match {
       case Some(id) =>
-        val maybeItem = getItem(
+        val maybeItem = getItem[AwsItem](
           primaryKeyName = "id",
           primaryKeyValue = id,
           tableName = "sunnymart-inventory"
         )
         maybeItem match {
-          case Some(value) => Ok(Json.toJson(value))
-          case None =>
-            NotFound(
-              Json.toJson(Map("message" -> "No item, See logs for detail"))
+          case Right(awsItem) =>
+            val maybeCategory = getItemCategory(awsItem.category)
+            maybeCategory match {
+              case Some(category) =>
+                val item = Item(
+                  id = awsItem.id,
+                  name = awsItem.name,
+                  category = category,
+                  details = awsItem.details,
+                  price = awsItem.price,
+                  essentialStatus = awsItem.essentialStatus,
+                  quantity = awsItem.quantity
+                )
+                Ok(Json.toJson(item))
+              case None =>
+                InternalServerError(
+                  Json.toJson(Map("error" -> "Failure to parse DynamoDB item"))
+                )
+            }
+
+          case Left(error) =>
+            Status(error("statusCode").toInt)(
+              Json.toJson(Map("error" -> error("errorMessage")))
             )
         }
       case None =>
