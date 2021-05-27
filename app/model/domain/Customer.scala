@@ -1,6 +1,6 @@
 package model.domain
 
-import play.api.libs.json.{Json, OWrites}
+import play.api.libs.json.{Json, OWrites, Reads}
 
 final case class Name(
     title: String,
@@ -37,7 +37,8 @@ object Name {
 }
 
 object Address {
-  implicit val ar: OWrites[Address] = Json.writes[Address]
+  implicit val ar: Reads[Address] = Json.reads[Address]
+  implicit val aw: OWrites[Address] = Json.writes[Address]
 }
 
 object Customer {
