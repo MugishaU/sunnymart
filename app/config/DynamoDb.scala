@@ -29,12 +29,22 @@ object DynamoDb {
   def getItem[T](
       primaryKeyName: String,
       primaryKeyValue: String,
+      sortKeyName: Option[String] = None,
+      sortKeyValue: Option[String] = None,
       tableName: String
   )(implicit reads: Reads[T]): Either[Map[String, String], T] = {
 
-    val key = HashMap(
-      primaryKeyName -> new AttributeValue(primaryKeyValue)
-    ).asJava
+    val key = (sortKeyName, sortKeyValue) match {
+      case (Some(keyName), Some(keyValue)) =>
+        HashMap(
+          primaryKeyName -> new AttributeValue(primaryKeyValue),
+          keyName -> new AttributeValue(keyValue)
+        ).asJava
+      case (_, _) =>
+        HashMap(
+          primaryKeyName -> new AttributeValue(primaryKeyValue)
+        ).asJava
+    }
 
     val request =
       new GetItemRequest()
@@ -45,6 +55,7 @@ object DynamoDb {
 
     item match {
       case Failure(e: AmazonServiceException) =>
+        println(e)
         createError(e.getErrorMessage, e.getStatusCode)
 
       case Failure(_) =>
