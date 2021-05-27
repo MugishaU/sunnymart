@@ -2,11 +2,9 @@ package model.domain
 
 import play.api.libs.json.{JsValue, Json, OWrites, Writes}
 
-import java.util.Date
-
 final case class DeliverySlot(
     id: String,
-    date: Date,
+    date: String,
     hour: Int,
     availability: DeliverySlotStatus
 )
@@ -17,6 +15,7 @@ final case class Delivery(
 )
 
 final case class Order(
+    id: String,
     orderStatus: OrderStatus,
     customerId: String,
     delivery: Delivery,

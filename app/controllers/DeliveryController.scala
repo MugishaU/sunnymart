@@ -53,7 +53,7 @@ class DeliveryController @Inject() (
   def dummyGetSlots(): Result = {
     val slot = DeliverySlot(
       id = "id",
-      date = new Date(),
+      date = "new Date()",
       hour = 16,
       availability = Available
     )
@@ -75,7 +75,7 @@ class DeliveryController @Inject() (
   ): Result = {
     val deliverySlot = DeliverySlot(
       id = "id",
-      date = new Date(),
+      date = "new Date()",
       hour = 16,
       availability = Available
     )
@@ -86,6 +86,7 @@ class DeliveryController @Inject() (
     )
 
     val order = Order(
+      id = "id",
       orderStatus = OrderPlaced,
       customerId = "customerId",
       delivery = delivery,
@@ -141,7 +142,7 @@ class DeliveryController @Inject() (
       case Some(value) =>
         val deliverySlot = DeliverySlot(
           id = slotId,
-          date = new Date(),
+          date = "new Date()",
           hour = 15,
           availability = deliverySlotStatus.get
         )
