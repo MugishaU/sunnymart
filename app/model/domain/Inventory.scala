@@ -1,6 +1,7 @@
 package model.domain
 
-import play.api.libs.json.{JsValue, Json, OWrites, Writes}
+import play.api.libs.json.{JsValue, Json, OWrites, Reads, Writes}
+final case class ItemDetail(header: String, content: String)
 
 final case class Item(
     id: String,
@@ -11,8 +12,6 @@ final case class Item(
     essentialStatus: Boolean,
     quantity: Int
 )
-
-final case class ItemDetail(header: String, content: String)
 
 final case class Inventory(items: List[Item])
 
@@ -47,10 +46,29 @@ object ItemCategory {
       case Miscellaneous    => Json.toJson("Miscellaneous")
     }
   }
+
+  def apply(maybeCategory: String): Option[ItemCategory] = {
+    maybeCategory match {
+      case "BreadAndBakery"   => Some(BreadAndBakery)
+      case "Breakfast"        => Some(Breakfast)
+      case "Drinks"           => Some(Drinks)
+      case "Dairy"            => Some(Dairy)
+      case "CannedGoods"      => Some(CannedGoods)
+      case "FruitAndVeg"      => Some(FruitAndVeg)
+      case "MeatAndFish"      => Some(MeatAndFish)
+      case "PersonalCare"     => Some(PersonalCare)
+      case "Confectionary"    => Some(Confectionary)
+      case "GrainsAndPasta"   => Some(GrainsAndPasta)
+      case "CleaningProducts" => Some(CleaningProducts)
+      case "Miscellaneous"    => Some(Miscellaneous)
+      case _                  => None
+    }
+  }
 }
 
 object ItemDetail {
   implicit val idw: OWrites[ItemDetail] = Json.writes[ItemDetail]
+  implicit val idr: Reads[ItemDetail] = Json.reads[ItemDetail]
 }
 
 object Item {

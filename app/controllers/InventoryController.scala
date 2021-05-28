@@ -1,13 +1,15 @@
 package controllers
 
 import play.api.mvc._
-import model.api.ApiItem
+import play.api.libs.json.Json
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import Helpers.{getItemCategory, handleRequestBody}
-import model.domain.{GrainsAndPasta, Inventory, Item, ItemDetail}
-import play.api.libs.json.Json
+import Helpers.handleRequestBody
+import config.DynamoDb.{PrimaryKey, getDynamoItem}
+import model.domain.{GrainsAndPasta, Inventory, Item, ItemCategory, ItemDetail}
+import model.api.ApiItem
+import model.aws.AwsItem
 
 import java.util.UUID
 
@@ -34,43 +36,54 @@ class InventoryController @Inject() (
       )
     }
 
-  def getInventoryItem(itemId: Option[String] = None): Action[AnyContent] =
+  def getInventoryItem(itemId: String): Action[AnyContent] =
     Action {
-      dummyGetInventory(itemId)
+      getInventoryItemFromDb(itemId)
     }
+
+  def getAllInventoryItems: Action[AnyContent] = ???
 
   def deleteInventoryItem(itemId: String): Action[AnyContent] =
     Action {
       dummyDeleteInventoryItem(itemId)
     }
 
-  def dummyGetInventory(itemId: Option[String]): Result = {
-    val item = Item(
-      id = "id",
-      name = "rice",
-      category = GrainsAndPasta,
-      details = List(ItemDetail(header = "weight", content = "500g")),
-      price = 100,
-      essentialStatus = true,
-      quantity = 500
-    )
+  def getInventoryItemFromDb(itemId: String): Result = {
+    val maybeItem = getDynamoItem[AwsItem](
+      primaryKey = PrimaryKey("id", itemId),
+      tableName = "sunnymart-inventory"
+    ) //TODO Move this to repository layer method
+    maybeItem match {
+      case Right(awsItem) =>
+        val maybeCategory = ItemCategory(awsItem.category)
+        maybeCategory match {
+          case Some(category) =>
+            val item = Item(
+              id = awsItem.id,
+              name = awsItem.name,
+              category = category,
+              details = awsItem.details,
+              price = awsItem.price,
+              essentialStatus = awsItem.essentialStatus,
+              quantity = awsItem.quantity
+            )
+            Ok(Json.toJson(item))
+          case None =>
+            InternalServerError(
+              Json.toJson(Map("error" -> "Failure to parse DynamoDB item"))
+            )
+        }
 
-    itemId match {
-      case Some(id) =>
-        Ok(Json.toJson(Inventory(List(item.copy(id = id)))))
-      case None =>
-        Ok(
-          Json.toJson(
-            Inventory(List(item, item.copy(id = "id2"), item.copy(id = "id3")))
-          )
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
         )
     }
-
   }
 
   def dummyCreateInventoryItem(parsedBody: ApiItem): Result = {
 
-    val itemCategory = getItemCategory(parsedBody.category)
+    val itemCategory = ItemCategory(parsedBody.category)
 
     itemCategory match {
       case Some(category) =>
@@ -96,7 +109,7 @@ class InventoryController @Inject() (
       params: Map[String, String]
   ): Result = {
     val itemId = params("itemId")
-    val itemCategory = getItemCategory(parsedBody.category)
+    val itemCategory = ItemCategory(parsedBody.category)
 
     itemCategory match {
       case Some(category) =>

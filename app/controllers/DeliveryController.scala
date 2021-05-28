@@ -5,20 +5,19 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.ApiDeliverySlotStatus
-import Helpers.{handleRequestBody, getDeliverySlotStatus}
+import Helpers.handleRequestBody
 import model.domain.{
   Address,
   Available,
   Delivery,
   DeliverySchedule,
   DeliverySlot,
+  DeliverySlotStatus,
   ItemSelection,
   Order,
   OrderPlaced
 }
 import play.api.libs.json.Json
-
-import java.util.Date
 
 @Singleton
 class DeliveryController @Inject() (
@@ -53,7 +52,7 @@ class DeliveryController @Inject() (
   def dummyGetSlots(): Result = {
     val slot = DeliverySlot(
       id = "id",
-      date = new Date(),
+      date = "new Date()",
       hour = 16,
       availability = Available
     )
@@ -75,7 +74,7 @@ class DeliveryController @Inject() (
   ): Result = {
     val deliverySlot = DeliverySlot(
       id = "id",
-      date = new Date(),
+      date = "new Date()",
       hour = 16,
       availability = Available
     )
@@ -86,6 +85,7 @@ class DeliveryController @Inject() (
     )
 
     val order = Order(
+      id = "id",
       orderStatus = OrderPlaced,
       customerId = "customerId",
       delivery = delivery,
@@ -133,7 +133,7 @@ class DeliveryController @Inject() (
       params: Map[String, String]
   ): Result = {
     val slotId = params("slotId")
-    val deliverySlotStatus = getDeliverySlotStatus(
+    val deliverySlotStatus = DeliverySlotStatus(
       parsedBody.deliverySlotStatus
     )
 
@@ -141,9 +141,9 @@ class DeliveryController @Inject() (
       case Some(value) =>
         val deliverySlot = DeliverySlot(
           id = slotId,
-          date = new Date(),
+          date = "new Date()",
           hour = 15,
-          availability = deliverySlotStatus.get
+          availability = value
         )
         Ok(Json.toJson(deliverySlot))
       case None =>

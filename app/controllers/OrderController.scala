@@ -5,20 +5,25 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.{ApiOrder, ApiOrderStatus, ApiReceipt, ApiReceiptItem}
-import Helpers.{getOrderStatus, handleRequestBody}
+import Helpers.handleRequestBody
+import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
+import model.aws.AwsOrder
 import model.domain.{
   Address,
   Delivery,
   DeliverySlot,
+  DeliverySlotStatus,
   ItemSelection,
   Order,
   OrderComplete,
   OrderPlaced,
+  OrderStatus,
   Unavailable
 }
 import play.api.libs.json.Json
 
-import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Singleton
 class OrderController @Inject() (
@@ -34,9 +39,9 @@ class OrderController @Inject() (
       )
     }
 
-  def getOrder(orderId: String): Action[AnyContent] =
+  def getOrder(customerId: String, orderId: String): Action[AnyContent] =
     Action {
-      dummyGetOrder(orderId)
+      dummyGetOrder(customerId, orderId)
     }
 
   def updateOrder(
@@ -83,7 +88,7 @@ class OrderController @Inject() (
   def dummyCreateOrder(parsedBody: ApiOrder): Result = {
     val deliverySlot = DeliverySlot(
       id = parsedBody.deliverySlotId,
-      date = new Date(),
+      date = "date",
       hour = 7,
       availability = Unavailable
     )
@@ -116,6 +121,7 @@ class OrderController @Inject() (
     }
 
     val order = Order(
+      id = "id",
       orderStatus = OrderPlaced,
       customerId = parsedBody.customerId,
       delivery = delivery,
@@ -129,37 +135,53 @@ class OrderController @Inject() (
     Ok(Json.toJson(order))
   }
 
-  def dummyGetOrder(orderId: String): Result = {
-    val deliverySlot = DeliverySlot(
-      id = "id",
-      date = new Date(),
-      hour = 7,
-      availability = Unavailable
+  def dummyGetOrder(customerId: String, orderId: String): Result = {
+    val maybeOrder = getDynamoItem[AwsOrder](
+      primaryKey = PrimaryKey("id", orderId),
+      sortKey = Some(SortKey("customerId", customerId)),
+      tableName = "sunnymart-orders"
     )
 
-    val address = Address(
-      line1 = "133 Park Road",
-      line2 = None,
-      county = None,
-      city = "Exeter",
-      postcode = "EX4 3GT"
-    )
+    maybeOrder match {
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
+        )
+      case Right(awsOrder) =>
+        val maybeOrderStatus = OrderStatus(awsOrder.orderStatus)
+        val maybeDeliverySlotStatus = DeliverySlotStatus(
+          awsOrder.delivery.deliverySlot.availability
+        )
 
-    val delivery = Delivery(
-      deliverySlot = deliverySlot,
-      deliveryAddress = Some(address)
-    )
+        (maybeOrderStatus, maybeDeliverySlotStatus) match {
+          case (Some(orderStatus), Some(deliverySlotStatus)) =>
+            val deliverySlot = DeliverySlot(
+              id = awsOrder.delivery.deliverySlot.id,
+              date = awsOrder.delivery.deliverySlot.date,
+              hour = awsOrder.delivery.deliverySlot.hour,
+              availability = deliverySlotStatus
+            )
+            val delivery = Delivery(
+              deliverySlot = deliverySlot,
+              deliveryAddress = awsOrder.delivery.deliveryAddress
+            )
+            val order = Order(
+              id = awsOrder.id,
+              orderStatus = orderStatus,
+              customerId = awsOrder.customerId,
+              delivery = delivery,
+              orderItems = awsOrder.orderItems,
+              totalCost = awsOrder.totalCost,
+              billingAddress = awsOrder.billingAddress
+            )
 
-    val order = Order(
-      orderStatus = OrderPlaced,
-      customerId = "customerId",
-      delivery = delivery,
-      orderItems = Nil,
-      totalCost = 0,
-      billingAddress = None
-    )
-
-    Ok(Json.toJson(order))
+            Ok(Json.toJson(order))
+          case (_, _) =>
+            InternalServerError(
+              Json.toJson(Map("error" -> "Failure to parse DynamoDB item"))
+            )
+        }
+    }
   }
 
   def dummyUpdateOrder(
@@ -171,7 +193,7 @@ class OrderController @Inject() (
 
     val deliverySlot = DeliverySlot(
       id = parsedBody.deliverySlotId,
-      date = new Date(),
+      date = "date",
       hour = 7,
       availability = Unavailable
     )
@@ -204,6 +226,7 @@ class OrderController @Inject() (
     }
 
     val order = Order(
+      id = "id",
       orderStatus = OrderPlaced,
       customerId = parsedBody.customerId,
       delivery = delivery,
@@ -222,13 +245,14 @@ class OrderController @Inject() (
       params: Map[String, String]
   ): Result = {
     val orderId = params("orderId")
-    val orderStatus = getOrderStatus(parsedBody.orderStatus)
+    val maybeOrderStatus = OrderStatus(parsedBody.orderStatus)
+    val date = LocalDate.now()
 
-    orderStatus match {
-      case Some(value) =>
+    maybeOrderStatus match {
+      case Some(orderStatus) =>
         val deliverySlot = DeliverySlot(
           id = "id",
-          date = new Date(),
+          date = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
           hour = 7,
           availability = Unavailable
         )
@@ -247,7 +271,8 @@ class OrderController @Inject() (
         )
 
         val order = Order(
-          orderStatus = orderStatus.get,
+          id = "id",
+          orderStatus = orderStatus,
           customerId = "customerId",
           delivery = delivery,
           orderItems = Nil,
@@ -266,7 +291,7 @@ class OrderController @Inject() (
   ): Result = {
     val deliverySlot = DeliverySlot(
       id = "id",
-      date = new Date(),
+      date = "date",
       hour = 7,
       availability = Unavailable
     )
@@ -285,6 +310,7 @@ class OrderController @Inject() (
     )
 
     val order = Order(
+      id = "id",
       orderStatus = OrderComplete,
       customerId = "customerId",
       delivery = delivery,

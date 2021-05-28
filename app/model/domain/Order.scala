@@ -2,11 +2,9 @@ package model.domain
 
 import play.api.libs.json.{JsValue, Json, OWrites, Writes}
 
-import java.util.Date
-
 final case class DeliverySlot(
     id: String,
-    date: Date,
+    date: String,
     hour: Int,
     availability: DeliverySlotStatus
 )
@@ -17,6 +15,7 @@ final case class Delivery(
 )
 
 final case class Order(
+    id: String,
     orderStatus: OrderStatus,
     customerId: String,
     delivery: Delivery,
@@ -47,6 +46,14 @@ object DeliverySlotStatus {
       case Unavailable => Json.toJson("Unavailable")
     }
   }
+
+  def apply(maybeStatus: String): Option[DeliverySlotStatus] = {
+    maybeStatus match {
+      case "Available"   => Some(Available)
+      case "Unavailable" => Some(Unavailable)
+      case _             => None
+    }
+  }
 }
 
 object DeliverySlot {
@@ -65,6 +72,17 @@ object OrderStatus {
       case OrderComplete       => Json.toJson("OrderComplete")
       case OrderFailed         => Json.toJson("OrderFailed")
       case OrderCancelled      => Json.toJson("OrderCancelled")
+    }
+  }
+
+  def apply(maybeStatus: String): Option[OrderStatus] = {
+    maybeStatus match {
+      case "OrderPlaced"         => Some(OrderPlaced)
+      case "OrderOutForDelivery" => Some(OrderOutForDelivery)
+      case "OrderComplete"       => Some(OrderComplete)
+      case "OrderFailed"         => Some(OrderFailed)
+      case "OrderCancelled"      => Some(OrderCancelled)
+      case _                     => None
     }
   }
 }

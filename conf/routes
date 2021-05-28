@@ -3,7 +3,8 @@
 # ~~~~
 
 POST        /inventory/items                                        controllers.InventoryController.createInventoryItem
-GET         /inventory/items                                        controllers.InventoryController.getInventoryItem(itemId: Option[String])
+GET         /inventory/items                                        controllers.InventoryController.getAllInventoryItems
+GET         /inventory/items/:itemId                                controllers.InventoryController.getInventoryItem(itemId)
 PUT         /inventory/items/:itemId                                controllers.InventoryController.updateInventoryItem(itemId)
 DELETE      /inventory/items/:itemId                                controllers.InventoryController.deleteInventoryItem(itemId)
 
@@ -13,7 +14,7 @@ PUT         /carts/:cartId/items/:itemId                            controllers.
 DELETE      /carts/:cartId/items/:itemId                            controllers.CartController.deleteItemSelection(cartId, itemId)
 
 POST        /orders                                                 controllers.OrderController.createOrder
-GET         /orders/:orderId                                        controllers.OrderController.getOrder(orderId)
+GET         /:customerId/orders/:orderId                            controllers.OrderController.getOrder(customerId,orderId)
 GET         /orders/:orderId/receipt                                controllers.OrderController.getReceipt(orderId)
 PUT         /orders/:orderId                                        controllers.OrderController.updateOrder(orderId)
 PUT         /orders/:orderId/status                                 controllers.OrderController.updateOrderStatus(orderId)
