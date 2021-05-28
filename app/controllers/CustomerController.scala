@@ -1,6 +1,6 @@
 package controllers
 
-import config.DynamoDb.{PrimaryKey, getDynamoItem}
+import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
@@ -18,7 +18,7 @@ class CustomerController @Inject() (
 
   def getCustomer(customerId: String): Action[AnyContent] =
     Action {
-      dummyGetCustomer(customerId)
+      getCustomerFromDb(customerId)
     }
 
   def createCustomer: Action[AnyContent] =
@@ -47,7 +47,7 @@ class CustomerController @Inject() (
       paymentId: String
   ): Action[AnyContent] =
     Action {
-      dummyGetPaymentDetails(customerId, paymentId)
+      getPaymentDetailsFromDb(customerId, paymentId)
     }
 
   def createPaymentDetails(customerId: String): Action[AnyContent] =
@@ -113,7 +113,7 @@ class CustomerController @Inject() (
     securityCode = 123
   )
 
-  def dummyGetCustomer(customerId: String): Result = {
+  def getCustomerFromDb(customerId: String): Result = {
 
     val maybeCustomer = getDynamoItem[Customer](
       primaryKey = PrimaryKey("id", customerId),
@@ -183,10 +183,20 @@ class CustomerController @Inject() (
     )
   }
 
-  def dummyGetPaymentDetails(customerId: String, paymentId: String): Result = {
-    val paymentInfo =
-      dummyPaymentInfo.copy(id = paymentId, customerId = customerId)
-    Ok(Json.toJson(paymentInfo))
+  def getPaymentDetailsFromDb(customerId: String, paymentId: String): Result = {
+    val maybePaymentDetails = getDynamoItem[PaymentInfo](
+      primaryKey = PrimaryKey("id", paymentId),
+      sortKey = Some(SortKey("customerId", paymentId)),
+      tableName = "sunnymart-payment-info"
+    )
+
+    maybePaymentDetails match {
+      case Right(paymentDetails) => Ok(Json.toJson(paymentDetails))
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
+        )
+    }
   }
 
   def dummyCreatePaymentDetails(
