@@ -5,9 +5,9 @@ import play.api.libs.json.Json
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import Helpers.{getItemCategory, handleRequestBody}
-import config.DynamoDb.getItem
-import model.domain.{GrainsAndPasta, Inventory, Item, ItemDetail}
+import Helpers.handleRequestBody
+import config.DynamoDb.{PrimaryKey, getDynamoItem}
+import model.domain.{GrainsAndPasta, Inventory, Item, ItemCategory, ItemDetail}
 import model.api.ApiItem
 import model.aws.AwsItem
 
@@ -46,7 +46,7 @@ class InventoryController @Inject() (
       dummyDeleteInventoryItem(itemId)
     }
 
-  def dummyGetInventory(itemId: Option[String]): Result = {
+  def dummyGetInventory(itemId: Option[String]): Result = { //TODO Divide in two
     val item = Item(
       id = "id",
       name = "rice",
@@ -59,14 +59,13 @@ class InventoryController @Inject() (
 
     itemId match {
       case Some(id) =>
-        val maybeItem = getItem[AwsItem](
-          primaryKeyName = "id",
-          primaryKeyValue = id,
+        val maybeItem = getDynamoItem[AwsItem](
+          primaryKey = PrimaryKey("id", id),
           tableName = "sunnymart-inventory"
-        )
+        ) //TODO Move this to repository layer method
         maybeItem match {
           case Right(awsItem) =>
-            val maybeCategory = getItemCategory(awsItem.category)
+            val maybeCategory = ItemCategory(awsItem.category)
             maybeCategory match {
               case Some(category) =>
                 val item = Item(
@@ -102,7 +101,7 @@ class InventoryController @Inject() (
 
   def dummyCreateInventoryItem(parsedBody: ApiItem): Result = {
 
-    val itemCategory = getItemCategory(parsedBody.category)
+    val itemCategory = ItemCategory(parsedBody.category)
 
     itemCategory match {
       case Some(category) =>
@@ -128,7 +127,7 @@ class InventoryController @Inject() (
       params: Map[String, String]
   ): Result = {
     val itemId = params("itemId")
-    val itemCategory = getItemCategory(parsedBody.category)
+    val itemCategory = ItemCategory(parsedBody.category)
 
     itemCategory match {
       case Some(category) =>

@@ -5,17 +5,19 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.{ApiOrder, ApiOrderStatus, ApiReceipt, ApiReceiptItem}
-import Helpers.{getDeliverySlotStatus, getOrderStatus, handleRequestBody}
-import config.DynamoDb.getItem
+import Helpers.handleRequestBody
+import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import model.aws.AwsOrder
 import model.domain.{
   Address,
   Delivery,
   DeliverySlot,
+  DeliverySlotStatus,
   ItemSelection,
   Order,
   OrderComplete,
   OrderPlaced,
+  OrderStatus,
   Unavailable
 }
 import play.api.libs.json.Json
@@ -134,11 +136,9 @@ class OrderController @Inject() (
   }
 
   def dummyGetOrder(customerId: String, orderId: String): Result = {
-    val maybeOrder = getItem[AwsOrder](
-      primaryKeyName = "id",
-      primaryKeyValue = orderId,
-      sortKeyName = Some("customerId"),
-      sortKeyValue = Some(customerId),
+    val maybeOrder = getDynamoItem[AwsOrder](
+      primaryKey = PrimaryKey("id", orderId),
+      sortKey = Some(SortKey("customerId", customerId)),
       tableName = "sunnymart-orders"
     )
 
@@ -148,8 +148,8 @@ class OrderController @Inject() (
           Json.toJson(Map("error" -> error("errorMessage")))
         )
       case Right(awsOrder) =>
-        val maybeOrderStatus = getOrderStatus(awsOrder.orderStatus)
-        val maybeDeliverySlotStatus = getDeliverySlotStatus(
+        val maybeOrderStatus = OrderStatus(awsOrder.orderStatus)
+        val maybeDeliverySlotStatus = DeliverySlotStatus(
           awsOrder.delivery.deliverySlot.availability
         )
 
@@ -245,7 +245,7 @@ class OrderController @Inject() (
       params: Map[String, String]
   ): Result = {
     val orderId = params("orderId")
-    val maybeOrderStatus = getOrderStatus(parsedBody.orderStatus)
+    val maybeOrderStatus = OrderStatus(parsedBody.orderStatus)
     val date = LocalDate.now()
 
     maybeOrderStatus match {
