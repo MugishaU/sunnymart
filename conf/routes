@@ -3,7 +3,8 @@
 # ~~~~
 
 POST        /inventory/items                                        controllers.InventoryController.createInventoryItem
-GET         /inventory/items                                        controllers.InventoryController.getInventoryItem(itemId: Option[String])
+GET         /inventory/items                                        controllers.InventoryController.getAllInventoryItems
+GET         /inventory/items/:itemId                                controllers.InventoryController.getInventoryItem(itemId)
 PUT         /inventory/items/:itemId                                controllers.InventoryController.updateInventoryItem(itemId)
 DELETE      /inventory/items/:itemId                                controllers.InventoryController.deleteInventoryItem(itemId)
 

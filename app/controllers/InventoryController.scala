@@ -36,67 +36,49 @@ class InventoryController @Inject() (
       )
     }
 
-  def getInventoryItem(itemId: Option[String] = None): Action[AnyContent] =
+  def getInventoryItem(itemId: String): Action[AnyContent] =
     Action {
       dummyGetInventory(itemId)
     }
+
+  def getAllInventoryItems: Action[AnyContent] = ???
 
   def deleteInventoryItem(itemId: String): Action[AnyContent] =
     Action {
       dummyDeleteInventoryItem(itemId)
     }
 
-  def dummyGetInventory(itemId: Option[String]): Result = { //TODO Divide in two
-    val item = Item(
-      id = "id",
-      name = "rice",
-      category = GrainsAndPasta,
-      details = List(ItemDetail(header = "weight", content = "500g")),
-      price = 100,
-      essentialStatus = true,
-      quantity = 500
-    )
-
-    itemId match {
-      case Some(id) =>
-        val maybeItem = getDynamoItem[AwsItem](
-          primaryKey = PrimaryKey("id", id),
-          tableName = "sunnymart-inventory"
-        ) //TODO Move this to repository layer method
-        maybeItem match {
-          case Right(awsItem) =>
-            val maybeCategory = ItemCategory(awsItem.category)
-            maybeCategory match {
-              case Some(category) =>
-                val item = Item(
-                  id = awsItem.id,
-                  name = awsItem.name,
-                  category = category,
-                  details = awsItem.details,
-                  price = awsItem.price,
-                  essentialStatus = awsItem.essentialStatus,
-                  quantity = awsItem.quantity
-                )
-                Ok(Json.toJson(item))
-              case None =>
-                InternalServerError(
-                  Json.toJson(Map("error" -> "Failure to parse DynamoDB item"))
-                )
-            }
-
-          case Left(error) =>
-            Status(error("statusCode").toInt)(
-              Json.toJson(Map("error" -> error("errorMessage")))
+  def dummyGetInventory(itemId: String): Result = {
+    val maybeItem = getDynamoItem[AwsItem](
+      primaryKey = PrimaryKey("id", itemId),
+      tableName = "sunnymart-inventory"
+    ) //TODO Move this to repository layer method
+    maybeItem match {
+      case Right(awsItem) =>
+        val maybeCategory = ItemCategory(awsItem.category)
+        maybeCategory match {
+          case Some(category) =>
+            val item = Item(
+              id = awsItem.id,
+              name = awsItem.name,
+              category = category,
+              details = awsItem.details,
+              price = awsItem.price,
+              essentialStatus = awsItem.essentialStatus,
+              quantity = awsItem.quantity
+            )
+            Ok(Json.toJson(item))
+          case None =>
+            InternalServerError(
+              Json.toJson(Map("error" -> "Failure to parse DynamoDB item"))
             )
         }
-      case None =>
-        Ok(
-          Json.toJson(
-            Inventory(List(item, item.copy(id = "id2"), item.copy(id = "id3")))
-          )
+
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
         )
     }
-
   }
 
   def dummyCreateInventoryItem(parsedBody: ApiItem): Result = {
