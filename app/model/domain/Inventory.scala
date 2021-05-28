@@ -46,6 +46,24 @@ object ItemCategory {
       case Miscellaneous    => Json.toJson("Miscellaneous")
     }
   }
+
+  def apply(maybeCategory: String): Option[ItemCategory] = {
+    maybeCategory match {
+      case "BreadAndBakery"   => Some(BreadAndBakery)
+      case "Breakfast"        => Some(Breakfast)
+      case "Drinks"           => Some(Drinks)
+      case "Dairy"            => Some(Dairy)
+      case "CannedGoods"      => Some(CannedGoods)
+      case "FruitAndVeg"      => Some(FruitAndVeg)
+      case "MeatAndFish"      => Some(MeatAndFish)
+      case "PersonalCare"     => Some(PersonalCare)
+      case "Confectionary"    => Some(Confectionary)
+      case "GrainsAndPasta"   => Some(GrainsAndPasta)
+      case "CleaningProducts" => Some(CleaningProducts)
+      case "Miscellaneous"    => Some(Miscellaneous)
+      case _                  => None
+    }
+  }
 }
 
 object ItemDetail {
