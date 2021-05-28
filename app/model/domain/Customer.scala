@@ -33,6 +33,7 @@ final case class PaymentInfo(
 )
 
 object Name {
+  implicit val nr: Reads[Name] = Json.reads[Name]
   implicit val nw: OWrites[Name] = Json.writes[Name]
 }
 
@@ -42,13 +43,16 @@ object Address {
 }
 
 object Customer {
+  implicit val cr: Reads[Customer] = Json.reads[Customer]
   implicit val cw: OWrites[Customer] = Json.writes[Customer]
 }
 
 object ExpiryDate {
+  implicit val edr: Reads[ExpiryDate] = Json.reads[ExpiryDate]
   implicit val edw: OWrites[ExpiryDate] = Json.writes[ExpiryDate]
 }
 
 object PaymentInfo {
+  implicit val pir: Reads[PaymentInfo] = Json.reads[PaymentInfo]
   implicit val piw: OWrites[PaymentInfo] = Json.writes[PaymentInfo]
 }

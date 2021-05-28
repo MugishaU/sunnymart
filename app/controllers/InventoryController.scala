@@ -38,7 +38,7 @@ class InventoryController @Inject() (
 
   def getInventoryItem(itemId: String): Action[AnyContent] =
     Action {
-      dummyGetInventory(itemId)
+      getInventoryItemFromDb(itemId)
     }
 
   def getAllInventoryItems: Action[AnyContent] = ???
@@ -48,7 +48,7 @@ class InventoryController @Inject() (
       dummyDeleteInventoryItem(itemId)
     }
 
-  def dummyGetInventory(itemId: String): Result = {
+  def getInventoryItemFromDb(itemId: String): Result = {
     val maybeItem = getDynamoItem[AwsItem](
       primaryKey = PrimaryKey("id", itemId),
       tableName = "sunnymart-inventory"

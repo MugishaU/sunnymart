@@ -1,5 +1,6 @@
 package controllers
 
+import config.DynamoDb.{PrimaryKey, getDynamoItem}
 import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
@@ -113,8 +114,19 @@ class CustomerController @Inject() (
   )
 
   def dummyGetCustomer(customerId: String): Result = {
-    val customer = dummyCustomer.copy(id = customerId)
-    Ok(Json.toJson(customer))
+
+    val maybeCustomer = getDynamoItem[Customer](
+      primaryKey = PrimaryKey("id", customerId),
+      tableName = "sunnymart-customers"
+    )
+
+    maybeCustomer match {
+      case Right(customer) => Ok(Json.toJson(customer))
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
+        )
+    }
   }
 
   def dummyCreateCustomer(parsedBody: ApiCustomer): Result = {
