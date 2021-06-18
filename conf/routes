@@ -14,8 +14,8 @@ PUT         /carts/:cartId/items/:itemId                            controllers.
 DELETE      /carts/:cartId/items/:itemId                            controllers.CartController.deleteItemSelection(cartId, itemId)
 
 POST        /orders                                                 controllers.OrderController.createOrder
-GET         /:customerId/orders/:orderId                            controllers.OrderController.getOrder(customerId,orderId)
-GET         /orders/:orderId/receipt                                controllers.OrderController.getReceipt(orderId)
+GET         /:customerId/orders/:orderId                            controllers.OrderController.getOrder(customerId, orderId)
+GET         /:customerId/orders/:orderId/receipt                    controllers.OrderController.getReceipt(customerId, orderId)
 PUT         /orders/:orderId                                        controllers.OrderController.updateOrder(orderId)
 PUT         /orders/:orderId/status                                 controllers.OrderController.updateOrderStatus(orderId)
 PUT         /orders/:orderId/complete                               controllers.OrderController.updateOrderComplete(orderId)

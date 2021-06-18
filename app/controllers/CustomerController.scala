@@ -186,7 +186,7 @@ class CustomerController @Inject() (
   def getPaymentDetailsFromDb(customerId: String, paymentId: String): Result = {
     val maybePaymentDetails = getDynamoItem[PaymentInfo](
       primaryKey = PrimaryKey("id", paymentId),
-      sortKey = Some(SortKey("customerId", paymentId)),
+      sortKey = Some(SortKey("customerId", customerId)),
       tableName = "sunnymart-payment-info"
     )
 

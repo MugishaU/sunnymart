@@ -41,7 +41,7 @@ class OrderController @Inject() (
 
   def getOrder(customerId: String, orderId: String): Action[AnyContent] =
     Action {
-      dummyGetOrder(customerId, orderId)
+      getOrderFromDb(customerId, orderId)
     }
 
   def updateOrder(
@@ -135,7 +135,7 @@ class OrderController @Inject() (
     Ok(Json.toJson(order))
   }
 
-  def dummyGetOrder(customerId: String, orderId: String): Result = {
+  def getOrderFromDb(customerId: String, orderId: String): Result = {
     val maybeOrder = getDynamoItem[AwsOrder](
       primaryKey = PrimaryKey("id", orderId),
       sortKey = Some(SortKey("customerId", customerId)),
