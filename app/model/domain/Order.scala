@@ -28,6 +28,18 @@ final case class DeliverySchedule(
     orders: List[Order]
 )
 
+final case class ReceiptItem(
+    name: String,
+    cost: Int,
+    quantity: Int
+)
+
+final case class Receipt(
+    orderId: String,
+    receiptItems: List[ReceiptItem],
+    deliveryCost: Int
+)
+
 sealed trait OrderStatus
 case object OrderPlaced extends OrderStatus
 case object OrderOutForDelivery extends OrderStatus
@@ -93,4 +105,12 @@ object Order {
 
 object DeliverySchedule {
   implicit val dsw: OWrites[DeliverySchedule] = Json.writes[DeliverySchedule]
+}
+
+object ReceiptItem{
+  implicit val riw: OWrites[ReceiptItem] = Json.writes[ReceiptItem]
+}
+
+object Receipt {
+  implicit val rw: OWrites[Receipt] = Json.writes[Receipt]
 }

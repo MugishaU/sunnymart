@@ -4,10 +4,10 @@ import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import model.api.{ApiOrder, ApiOrderStatus, ApiReceipt, ApiReceiptItem}
+import model.api.{ApiOrder, ApiOrderStatus}
 import Helpers.handleRequestBody
 import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
-import model.aws.AwsOrder
+import model.aws.{AwsItem, AwsOrder}
 import model.domain.{
   Address,
   Delivery,
@@ -18,6 +18,8 @@ import model.domain.{
   OrderComplete,
   OrderPlaced,
   OrderStatus,
+  Receipt,
+  ReceiptItem,
   Unavailable
 }
 import play.api.libs.json.Json
@@ -78,11 +80,9 @@ class OrderController @Inject() (
       dummyDeleteOrder(orderId)
     }
 
-  def getReceipt(
-      orderId: String
-  ): Action[AnyContent] =
+  def getReceipt(customerId: String, orderId: String): Action[AnyContent] =
     Action {
-      dummyGetReceipt(orderId)
+      dummyGetReceipt(customerId, orderId)
     }
 
   def dummyCreateOrder(parsedBody: ApiOrder): Result = {
@@ -326,22 +326,49 @@ class OrderController @Inject() (
     Ok(Json.toJson(Map("message" -> s"Order $orderId deleted successfully")))
   }
 
-  def dummyGetReceipt(orderId: String): Result = {
-    val apiReceiptItem = ApiReceiptItem(
-      name = "rice",
-      quantity = 3,
-      itemCost = 500
+  def dummyGetReceipt(customerId: String, orderId: String): Result = {
+
+    //todo convert itemselection to receiptitem
+    def itemSelectionToReceiptItem(
+        itemSelections: List[ItemSelection]
+    ): Option[List[ReceiptItem]] = {
+
+      val receiptItems = itemSelections.map(item =>
+        getDynamoItem[AwsItem](
+          primaryKey = PrimaryKey("id", item.itemId),
+          tableName = "sunnymart-inventory"
+        )
+      )
+    }
+
+
+    val maybeOrder = getDynamoItem[AwsOrder](
+      primaryKey = PrimaryKey("id", orderId),
+      sortKey = Some(SortKey("customerId", customerId)),
+      tableName = "sunnymart-orders"
     )
 
-    val receiptItemList =
-      List(apiReceiptItem, apiReceiptItem.copy(name = "bread"))
+    maybeOrder match {
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
+        )
+      case Right(awsOrder) =>
+        val receiptItems = itemSelectionToReceiptItem(awsOrder.orderItems)
 
-    val apiReceipt = ApiReceipt(
-      orderId = orderId,
-      orderItems = receiptItemList,
-      deliveryCost = 499
-    )
-
-    Ok(Json.toJson(apiReceipt))
+        receiptItems match {
+          case Some(items) =>
+            val receipt = Receipt(
+              orderId = orderId,
+              receiptItems = items,
+              deliveryCost = 0
+            )
+            Ok(Json.toJson(receipt))
+          case None =>
+            InternalServerError(
+              Json.toJson(Map("error" -> "Failed to collect all receipt items"))
+            )
+        }
+    }
   }
 }
