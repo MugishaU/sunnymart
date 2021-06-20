@@ -330,17 +330,27 @@ class OrderController @Inject() (
 
     //todo convert itemselection to receiptitem
     def itemSelectionToReceiptItem(
-        itemSelections: List[ItemSelection]
-    ): Option[List[ReceiptItem]] = {
+        item: ItemSelection
+    ): Option[ReceiptItem] = {
 
-      val receiptItems = itemSelections.map(item =>
+      val receiptItems =
         getDynamoItem[AwsItem](
           primaryKey = PrimaryKey("id", item.itemId),
           tableName = "sunnymart-inventory"
         )
-      )
-    }
 
+      receiptItems match {
+        case Left(_) => None
+        case Right(awsItem) =>
+          Some(
+            ReceiptItem(
+              name = awsItem.name,
+              cost = awsItem.price,
+              quantity = item.quantity
+            )
+          )
+      }
+    }
 
     val maybeOrder = getDynamoItem[AwsOrder](
       primaryKey = PrimaryKey("id", orderId),
@@ -354,21 +364,33 @@ class OrderController @Inject() (
           Json.toJson(Map("error" -> error("errorMessage")))
         )
       case Right(awsOrder) =>
-        val receiptItems = itemSelectionToReceiptItem(awsOrder.orderItems)
+//        val receiptItems = itemSelectionToReceiptItem(awsOrder.orderItems) //todo for comp
+//
+        val receiptItems = for {
+          item <- awsOrder.orderItems
+          convertItem <- itemSelectionToReceiptItem(item)
+        } yield convertItem
 
-        receiptItems match {
-          case Some(items) =>
-            val receipt = Receipt(
-              orderId = orderId,
-              receiptItems = items,
-              deliveryCost = 0
-            )
-            Ok(Json.toJson(receipt))
-          case None =>
-            InternalServerError(
-              Json.toJson(Map("error" -> "Failed to collect all receipt items"))
-            )
-        }
+        val receipt = Receipt(
+          orderId = orderId,
+          receiptItems = receiptItems,
+          deliveryCost = 0
+        )
+        Ok(Json.toJson(receipt))
+
+//        receiptItems match {
+//          case Some(items) =>
+//        val receipt = Receipt(
+//          orderId = orderId,
+//          receiptItems = receiptItems,
+//          deliveryCost = 0
+//        )
+//        Ok(Json.toJson(receipt))
+//          case None =>
+//            InternalServerError(
+//              Json.toJson(Map("error" -> "Failed to collect all receipt items"))
+//            )
+//        }
     }
   }
 }
