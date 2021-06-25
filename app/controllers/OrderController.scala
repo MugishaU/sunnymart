@@ -6,22 +6,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.{ApiOrder, ApiOrderStatus}
 import Helpers.handleRequestBody
+import cats.Id
+import cats.data.{EitherT, OptionT}
 import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import model.aws.{AwsItem, AwsOrder}
-import model.domain.{
-  Address,
-  Delivery,
-  DeliverySlot,
-  DeliverySlotStatus,
-  ItemSelection,
-  Order,
-  OrderComplete,
-  OrderPlaced,
-  OrderStatus,
-  Receipt,
-  ReceiptItem,
-  Unavailable
-}
+import model.domain.{Address, Delivery, DeliverySlot, DeliverySlotStatus, ItemSelection, Order, OrderComplete, OrderPlaced, OrderStatus, Receipt, ReceiptItem, Unavailable}
 import play.api.libs.json.Json
 
 import java.time.LocalDate
@@ -366,16 +355,17 @@ class OrderController @Inject() (
       case Right(awsOrder) =>
 //        val receiptItems = itemSelectionToReceiptItem(awsOrder.orderItems) //todo for comp
 //
-        val receiptItems = for {
-          item <- awsOrder.orderItems
-          convertItem <- itemSelectionToReceiptItem(item)
-        } yield convertItem
+        val receiptItems = (for {
+          item <- OptionT.liftF(awsOrder.orderItems)
+          convertItem <- OptionT.apply[List,ReceiptItem](itemSelectionToReceiptItem(item))
+        } yield convertItem).value
 
         val receipt = Receipt(
           orderId = orderId,
           receiptItems = receiptItems,
           deliveryCost = 0
         )
+
         Ok(Json.toJson(receipt))
 
 //        receiptItems match {
