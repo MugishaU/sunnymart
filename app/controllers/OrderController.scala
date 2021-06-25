@@ -12,6 +12,7 @@ import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import model.aws.{AwsItem, AwsOrder}
 import model.domain.{Address, Delivery, DeliverySlot, DeliverySlotStatus, ItemSelection, Order, OrderComplete, OrderPlaced, OrderStatus, Receipt, ReceiptItem, Unavailable}
 import play.api.libs.json.Json
+import util._
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -355,10 +356,7 @@ class OrderController @Inject() (
       case Right(awsOrder) =>
 //        val receiptItems = itemSelectionToReceiptItem(awsOrder.orderItems) //todo for comp
 //
-        val receiptItems = (for {
-          item <- OptionT.liftF(awsOrder.orderItems)
-          convertItem <- OptionT.apply[List,ReceiptItem](itemSelectionToReceiptItem(item))
-        } yield convertItem).value
+        val receiptItems = foldWhilePresent(awsOrder.orderItems)(itemSelectionToReceiptItem)
 
         val receipt = Receipt(
           orderId = orderId,
