@@ -6,7 +6,8 @@ object Dependencies {
 
   val projectDependencies = Seq(
     "com.amazonaws" % "aws-java-sdk-dynamodb" % awsJdkVersion,
-    "com.amazonaws" % "aws-java-sdk-s3" % awsJdkVersion
+    "com.amazonaws" % "aws-java-sdk-s3" % awsJdkVersion,
+    "org.typelevel" %% "cats-core" % "2.6.1"
   )
 
   implicit class DependenciesProject(project: Project) {
