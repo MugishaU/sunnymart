@@ -6,8 +6,6 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.{ApiOrder, ApiOrderStatus}
 import Helpers.handleRequestBody
-import cats.Id
-import cats.data.{EitherT, OptionT}
 import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import model.aws.{AwsItem, AwsOrder}
 import model.domain.{
