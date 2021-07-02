@@ -10,7 +10,20 @@ import cats.Id
 import cats.data.{EitherT, OptionT}
 import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import model.aws.{AwsItem, AwsOrder}
-import model.domain.{Address, Delivery, DeliverySlot, DeliverySlotStatus, ItemSelection, Order, OrderComplete, OrderPlaced, OrderStatus, Receipt, ReceiptItem, Unavailable}
+import model.domain.{
+  Address,
+  Delivery,
+  DeliverySlot,
+  DeliverySlotStatus,
+  ItemSelection,
+  Order,
+  OrderComplete,
+  OrderPlaced,
+  OrderStatus,
+  Receipt,
+  ReceiptItem,
+  Unavailable
+}
 import play.api.libs.json.Json
 import util._
 
@@ -318,7 +331,6 @@ class OrderController @Inject() (
 
   def dummyGetReceipt(customerId: String, orderId: String): Result = {
 
-    //todo convert itemselection to receiptitem
     def itemSelectionToReceiptItem(
         item: ItemSelection
     ): Option[ReceiptItem] = {
@@ -354,31 +366,23 @@ class OrderController @Inject() (
           Json.toJson(Map("error" -> error("errorMessage")))
         )
       case Right(awsOrder) =>
-//        val receiptItems = itemSelectionToReceiptItem(awsOrder.orderItems) //todo for comp
-//
-        val receiptItems = foldWhilePresent(awsOrder.orderItems)(itemSelectionToReceiptItem)
+        val receiptItems =
+          foldWhilePresent(awsOrder.orderItems)(itemSelectionToReceiptItem)
 
-        val receipt = Receipt(
-          orderId = orderId,
-          receiptItems = receiptItems,
-          deliveryCost = 0
-        )
-
-        Ok(Json.toJson(receipt))
-
-//        receiptItems match {
-//          case Some(items) =>
-//        val receipt = Receipt(
-//          orderId = orderId,
-//          receiptItems = receiptItems,
-//          deliveryCost = 0
-//        )
-//        Ok(Json.toJson(receipt))
-//          case None =>
-//            InternalServerError(
-//              Json.toJson(Map("error" -> "Failed to collect all receipt items"))
-//            )
-//        }
+        //TODO Figure out how to apply delivery cost
+        receiptItems match {
+          case Some(items) =>
+            val receipt = Receipt(
+              orderId = orderId,
+              receiptItems = items,
+              deliveryCost = 0
+            )
+            Ok(Json.toJson(receipt))
+          case None =>
+            InternalServerError(
+              Json.toJson(Map("error" -> "Failed to collect all receipt items"))
+            )
+        }
     }
   }
 }
