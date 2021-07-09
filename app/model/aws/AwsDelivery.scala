@@ -1,7 +1,7 @@
 package model.aws
 
 import model.domain.Address
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, OWrites, Reads}
 
 final case class AwsDeliverySlot(
     id: String,
@@ -17,6 +17,7 @@ final case class AwsDelivery(
 
 object AwsDeliverySlot {
   implicit val adsr: Reads[AwsDeliverySlot] = Json.reads[AwsDeliverySlot]
+  implicit val adsw: OWrites[AwsDeliverySlot] = Json.writes[AwsDeliverySlot]
 }
 
 object AwsDelivery {

@@ -14,6 +14,6 @@ final case class AwsItem(
 )
 
 object AwsItem {
-  implicit val ir: Reads[AwsItem] = Json.reads[AwsItem]
-  implicit val iw: OWrites[AwsItem] = Json.writes[AwsItem]
+  implicit val air: Reads[AwsItem] = Json.reads[AwsItem]
+  implicit val aiw: OWrites[AwsItem] = Json.writes[AwsItem]
 }
