@@ -5,7 +5,9 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.ApiDeliverySlotStatus
-import Helpers.handleRequestBody
+import db.DynamoDb.scanDynamoTable
+import db.{Equals, FilterExpression}
+import model.aws.AwsDeliverySlot
 import model.domain.{
   Address,
   Available,
@@ -27,7 +29,7 @@ class DeliveryController @Inject() (
 
   def getAvailableSlots: Action[AnyContent] =
     Action {
-      dummyGetSlots()
+      getAvailableSlotsFromDb
     }
 
   def getDeliverySchedule(
@@ -49,23 +51,17 @@ class DeliveryController @Inject() (
       )
     }
 
-  def dummyGetSlots(): Result = {
-    val slot = DeliverySlot(
-      id = "id",
-      date = "new Date()",
-      hour = 16,
-      availability = Available
+  def getAvailableSlotsFromDb: Result = {
+    val filterExpression = FilterExpression(
+      filterKey = "availability",
+      filterValue = "Available",
+      filterOperator = Equals
     )
-
-    Ok(
-      Json.toJson(
-        List(
-          slot,
-          slot.copy(id = "id2", hour = 19),
-          slot.copy(id = "id3", hour = 8)
-        )
-      )
+    val scanResult = scanDynamoTable[AwsDeliverySlot](
+      "sunnymart-delivery-slots",
+      Some(filterExpression)
     )
+    Ok(Json.toJson(scanResult))
   }
 
   def dummyGetDeliverySchedule(

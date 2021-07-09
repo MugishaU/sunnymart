@@ -1,4 +1,4 @@
-package config
+package db
 
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.dynamodbv2.{
@@ -11,12 +11,9 @@ import com.amazonaws.services.dynamodbv2.model.{
   GetItemRequest,
   ScanRequest
 }
-import model.aws.AwsItem
-import play.api.libs.json.Json.writes
 import play.api.libs.json._
 
 import scala.collection.immutable.HashMap
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -108,9 +105,20 @@ object DynamoDb {
   }
 
   def scanDynamoTable[T](
-      tableName: String
+      tableName: String,
+      filterExpression: Option[FilterExpression] = None
   )(implicit reads: Reads[T], writes: OWrites[T]): List[T] = {
-    val scanRequest = new ScanRequest().withTableName(tableName)
+
+    val scanRequest = filterExpression match {
+      case Some(filterExpression) =>
+        new ScanRequest()
+          .withTableName(tableName)
+          .withFilterExpression(filterExpression.toString)
+          .withExpressionAttributeValues(filterExpression.attributeValue)
+      case None =>
+        new ScanRequest()
+          .withTableName(tableName)
+    }
 
     val result = dynamoDbClient.scan(scanRequest)
 
@@ -120,7 +128,10 @@ object DynamoDb {
 
     val (awsSuccessList, awsFailureList) = awsItemList.partition(_.isSuccess)
 
-    println(s"Failures: $awsFailureList")
+    if (awsFailureList.nonEmpty) {
+      println(s"Failures: $awsFailureList")
+    }
+
     awsSuccessList.map(_.get)
   }
 }
