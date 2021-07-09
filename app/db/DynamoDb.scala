@@ -107,7 +107,7 @@ object DynamoDb {
   def scanDynamoTable[T](
       tableName: String,
       filterExpression: Option[FilterExpression] = None
-  )(implicit reads: Reads[T], writes: OWrites[T]): List[T] = {
+  )(implicit reads: Reads[T], writes: OWrites[T]): DynamoDbResponse[List[T]] = {
 
     val scanRequest = filterExpression match {
       case Some(filterExpression) =>
@@ -120,18 +120,31 @@ object DynamoDb {
           .withTableName(tableName)
     }
 
-    val result = dynamoDbClient.scan(scanRequest)
+    val request = Try(Option(dynamoDbClient.scan(scanRequest)))
 
-    val awsItemList = result.getItems.asScala
-      .map(parseItem[T])
-      .toList
+    request match {
+      case Failure(e: AmazonServiceException) =>
+        createError(e.getErrorMessage, e.getStatusCode)
 
-    val (awsSuccessList, awsFailureList) = awsItemList.partition(_.isSuccess)
+      case Failure(_) =>
+        createError("Unknown error on database fetch", 500)
 
-    if (awsFailureList.nonEmpty) {
-      println(s"Failures: $awsFailureList")
+      case Success(None) =>
+        createError("No such item found", 404)
+
+      case Success(Some(result)) =>
+        val awsItemList = result.getItems.asScala
+          .map(parseItem[T])
+          .toList
+
+        val (awsSuccessList, awsFailureList) =
+          awsItemList.partition(_.isSuccess)
+
+        if (awsFailureList.nonEmpty) {
+          println(s"Failures: $awsFailureList")
+        }
+        Right(awsSuccessList.map(_.get))
     }
 
-    awsSuccessList.map(_.get)
   }
 }

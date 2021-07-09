@@ -61,7 +61,15 @@ class DeliveryController @Inject() (
       "sunnymart-delivery-slots",
       Some(filterExpression)
     )
-    Ok(Json.toJson(scanResult))
+
+    scanResult match {
+      case Left(error) =>
+        Status(error("statusCode").toInt)(
+          Json.toJson(Map("error" -> error("errorMessage")))
+        )
+      case Right(result) => Ok(Json.toJson(result))
+    }
+
   }
 
   def dummyGetDeliverySchedule(
