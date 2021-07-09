@@ -1,11 +1,10 @@
 package controllers
 
-import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
+import db.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import controllers.Helpers.handleRequestBody
 import model.api.{ApiCustomer, ApiPaymentInfo}
 import model.domain.{Address, Customer, ExpiryDate, Name, PaymentInfo}
 import play.api.libs.json.Json

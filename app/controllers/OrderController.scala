@@ -5,8 +5,7 @@ import play.api.mvc._
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import model.api.{ApiOrder, ApiOrderStatus}
-import Helpers.handleRequestBody
-import config.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
+import db.DynamoDb.{PrimaryKey, SortKey, getDynamoItem}
 import model.aws.{AwsItem, AwsOrder}
 import model.domain.{
   Address,

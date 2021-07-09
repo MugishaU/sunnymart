@@ -1,10 +1,8 @@
-package controllers
-
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 
-case object Helpers {
+package object controllers {
   def handleRequestBody[T](
       request: Request[AnyContent],
       response: T => Result

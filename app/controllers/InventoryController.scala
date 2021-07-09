@@ -1,18 +1,16 @@
 package controllers
 
 import play.api.mvc._
-import play.api.libs.json.{Json, OWrites}
+import play.api.libs.json.Json
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import Helpers.handleRequestBody
-import config.DynamoDb.{PrimaryKey, getDynamoItem, scanDynamoTable}
-import model.domain.{GrainsAndPasta, Inventory, Item, ItemCategory, ItemDetail}
+import db.DynamoDb.{PrimaryKey, getDynamoItem, scanDynamoTable}
+import model.domain.{Item, ItemCategory, ItemDetail}
 import model.api.ApiItem
 import model.aws.AwsItem
 
 import java.util.UUID
-import scala.collection.mutable
 
 @Singleton
 class InventoryController @Inject() (

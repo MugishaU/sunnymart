@@ -7,7 +7,6 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 import model.api.{ApiItemSelection, ApiShoppingCart, ApiUpdateQuantity}
-import Helpers.handleRequestBody
 import model.domain.{ItemSelection, ShoppingCart}
 
 import java.util.UUID
