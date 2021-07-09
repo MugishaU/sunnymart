@@ -1,9 +1,16 @@
 package config
 
 import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
+import com.amazonaws.services.dynamodbv2.{
+  AmazonDynamoDB,
+  AmazonDynamoDBClientBuilder
+}
 import com.amazonaws.services.dynamodbv2.document.ItemUtils
-import com.amazonaws.services.dynamodbv2.model.{AttributeValue, GetItemRequest, ScanRequest}
+import com.amazonaws.services.dynamodbv2.model.{
+  AttributeValue,
+  GetItemRequest,
+  ScanRequest
+}
 import model.aws.AwsItem
 import play.api.libs.json.Json.writes
 import play.api.libs.json._
@@ -59,6 +66,11 @@ object DynamoDb {
     Try(Option(dynamoDbClient.getItem(request).getItem))
   }
 
+  def parseItem[T](value: DynamoDbRequest)(implicit reads: Reads[T]): Try[T] = {
+    val jsonString = ItemUtils.toItem(value).toJSON
+    Try(Json.parse(jsonString).as[T])
+  }
+
   private def convertDynamoDbResponse[T](
       request: Try[Option[DynamoDbRequest]]
   )(implicit reads: Reads[T]): DynamoDbResponse[T] = {
@@ -73,8 +85,7 @@ object DynamoDb {
         createError("No such item found", 404)
 
       case Success(Some(value)) =>
-        val jsonString = ItemUtils.toItem(value).toJSON
-        val awsItem = Try(Json.parse(jsonString).as[T])
+        val awsItem = parseItem(value)
 
         awsItem match {
           case Failure(_) =>
@@ -98,27 +109,18 @@ object DynamoDb {
 
   def scanDynamoTable[T](
       tableName: String
-  )(implicit reads: Reads[T], writes: OWrites[T]): T = {
-//    val table = dynamoDbClient.scan(tableName,)
-    println("made it")
+  )(implicit reads: Reads[T], writes: OWrites[T]): List[T] = {
     val scanRequest = new ScanRequest().withTableName(tableName)
 
     val result = dynamoDbClient.scan(scanRequest)
 
-    val g = result.getItems.asScala
-      .map(ItemUtils.toItem(_).toJSON)
-      .map(x => Json.parse(x).as[T])
+    val awsItemList = result.getItems.asScala
+      .map(parseItem[T])
       .toList
 
-    g.foreach(println)
-    g.head
+    val (awsSuccessList, awsFailureList) = awsItemList.partition(_.isSuccess)
 
-//    println(result.getItems)
-
-//    for (item <- result.getItems) {
-//      println(item)
-//    }
-
+    println(s"Failures: $awsFailureList")
+    awsSuccessList.map(_.get)
   }
-
 }

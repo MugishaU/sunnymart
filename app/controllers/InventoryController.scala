@@ -44,7 +44,7 @@ class InventoryController @Inject() (
 
   def getAllInventoryItems: Action[AnyContent] = {
     Action{
-      getAllInventoryItemsDummy
+      getAllItemsFromDb
     }
   }
 
@@ -53,9 +53,9 @@ class InventoryController @Inject() (
       dummyDeleteInventoryItem(itemId)
     }
 
-  def getAllInventoryItemsDummy: Result = {
-    val c = scanDynamoTable[AwsItem]("sunnymart-inventory")
-    Ok(c)
+  def getAllItemsFromDb: Result = {
+    val scanResult = scanDynamoTable[AwsItem]("sunnymart-inventory")
+    Ok(Json.toJson(scanResult))
   }
 
   def getInventoryItemFromDb(itemId: String): Result = {
