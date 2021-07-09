@@ -1,7 +1,7 @@
 package model.aws
 
 import model.domain.ItemDetail
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, OWrites, Reads}
 
 final case class AwsItem(
     id: String,
@@ -15,4 +15,5 @@ final case class AwsItem(
 
 object AwsItem {
   implicit val ir: Reads[AwsItem] = Json.reads[AwsItem]
+  implicit val iw: OWrites[AwsItem] = Json.writes[AwsItem]
 }

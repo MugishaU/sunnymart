@@ -1,17 +1,18 @@
 package controllers
 
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OWrites}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import Helpers.handleRequestBody
-import config.DynamoDb.{PrimaryKey, getDynamoItem}
+import config.DynamoDb.{PrimaryKey, getDynamoItem, scanDynamoTable}
 import model.domain.{GrainsAndPasta, Inventory, Item, ItemCategory, ItemDetail}
 import model.api.ApiItem
 import model.aws.AwsItem
 
 import java.util.UUID
+import scala.collection.mutable
 
 @Singleton
 class InventoryController @Inject() (
@@ -41,12 +42,21 @@ class InventoryController @Inject() (
       getInventoryItemFromDb(itemId)
     }
 
-  def getAllInventoryItems: Action[AnyContent] = ???
+  def getAllInventoryItems: Action[AnyContent] = {
+    Action{
+      getAllInventoryItemsDummy
+    }
+  }
 
   def deleteInventoryItem(itemId: String): Action[AnyContent] =
     Action {
       dummyDeleteInventoryItem(itemId)
     }
+
+  def getAllInventoryItemsDummy: Result = {
+    val c = scanDynamoTable[AwsItem]("sunnymart-inventory")
+    Ok(c)
+  }
 
   def getInventoryItemFromDb(itemId: String): Result = {
     val maybeItem = getDynamoItem[AwsItem](

@@ -1,16 +1,15 @@
 package config
 
 import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.dynamodbv2.{
-  AmazonDynamoDB,
-  AmazonDynamoDBClientBuilder
-}
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
 import com.amazonaws.services.dynamodbv2.document.ItemUtils
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest
+import com.amazonaws.services.dynamodbv2.model.{AttributeValue, GetItemRequest, ScanRequest}
+import model.aws.AwsItem
+import play.api.libs.json.Json.writes
 import play.api.libs.json._
 
 import scala.collection.immutable.HashMap
+import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -96,4 +95,30 @@ object DynamoDb {
     convertDynamoDbResponse(dynamoRequest)
 
   }
+
+  def scanDynamoTable[T](
+      tableName: String
+  )(implicit reads: Reads[T], writes: OWrites[T]): T = {
+//    val table = dynamoDbClient.scan(tableName,)
+    println("made it")
+    val scanRequest = new ScanRequest().withTableName(tableName)
+
+    val result = dynamoDbClient.scan(scanRequest)
+
+    val g = result.getItems.asScala
+      .map(ItemUtils.toItem(_).toJSON)
+      .map(x => Json.parse(x).as[T])
+      .toList
+
+    g.foreach(println)
+    g.head
+
+//    println(result.getItems)
+
+//    for (item <- result.getItems) {
+//      println(item)
+//    }
+
+  }
+
 }
