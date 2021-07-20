@@ -84,8 +84,10 @@ class DeliveryController @Inject() (
     )
 
     val delivery = Delivery(
-      deliverySlot = deliverySlot,
-      deliveryAddress = None
+      slot = deliverySlot,
+      address = None,
+      compassDirection = None
+
     )
 
     val order = Order(

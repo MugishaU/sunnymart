@@ -102,8 +102,9 @@ class OrderController @Inject() (
     )
 
     val delivery = Delivery(
-      deliverySlot = deliverySlot,
-      deliveryAddress = Some(address)
+      slot = deliverySlot,
+      address = Some(address),
+      compassDirection = None
     )
 
     val billingAddress = if (parsedBody.billingAddress.isDefined) {
@@ -150,20 +151,21 @@ class OrderController @Inject() (
       case Right(awsOrder) =>
         val maybeOrderStatus = OrderStatus(awsOrder.orderStatus)
         val maybeDeliverySlotStatus = DeliverySlotStatus(
-          awsOrder.delivery.deliverySlot.availability
+          awsOrder.delivery.slot.availability
         )
 
         (maybeOrderStatus, maybeDeliverySlotStatus) match {
           case (Some(orderStatus), Some(deliverySlotStatus)) =>
             val deliverySlot = DeliverySlot(
-              id = awsOrder.delivery.deliverySlot.id,
-              date = awsOrder.delivery.deliverySlot.date,
-              hour = awsOrder.delivery.deliverySlot.hour,
+              id = awsOrder.delivery.slot.id,
+              date = awsOrder.delivery.slot.date,
+              hour = awsOrder.delivery.slot.hour,
               availability = deliverySlotStatus
             )
             val delivery = Delivery(
-              deliverySlot = deliverySlot,
-              deliveryAddress = awsOrder.delivery.deliveryAddress
+              slot = deliverySlot,
+              address = awsOrder.delivery.address,
+              compassDirection = awsOrder.delivery.compassDirection
             )
             val order = Order(
               id = awsOrder.id,
@@ -207,8 +209,9 @@ class OrderController @Inject() (
     )
 
     val delivery = Delivery(
-      deliverySlot = deliverySlot,
-      deliveryAddress = Some(address)
+      slot = deliverySlot,
+      address = Some(address),
+      compassDirection = None
     )
 
     val billingAddress = if (parsedBody.billingAddress.isDefined) {
@@ -266,8 +269,9 @@ class OrderController @Inject() (
         )
 
         val delivery = Delivery(
-          deliverySlot = deliverySlot,
-          deliveryAddress = Some(address)
+          slot = deliverySlot,
+          address = Some(address),
+          compassDirection = None
         )
 
         val order = Order(
@@ -305,8 +309,9 @@ class OrderController @Inject() (
     )
 
     val delivery = Delivery(
-      deliverySlot = deliverySlot,
-      deliveryAddress = Some(address)
+      slot = deliverySlot,
+      address = Some(address),
+      compassDirection = None
     )
 
     val order = Order(

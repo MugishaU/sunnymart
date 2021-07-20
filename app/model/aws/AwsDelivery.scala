@@ -11,8 +11,9 @@ final case class AwsDeliverySlot(
 )
 
 final case class AwsDelivery(
-    deliverySlot: AwsDeliverySlot,
-    deliveryAddress: Option[Address]
+    slot: AwsDeliverySlot,
+    address: Option[Address],
+    compassDirection: Option[String]
 )
 
 object AwsDeliverySlot {

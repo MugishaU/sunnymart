@@ -10,8 +10,9 @@ final case class DeliverySlot(
 )
 
 final case class Delivery(
-    deliverySlot: DeliverySlot,
-    deliveryAddress: Option[Address]
+    slot: DeliverySlot,
+    address: Option[Address],
+    compassDirection: Option[String]
 )
 
 final case class Order(
