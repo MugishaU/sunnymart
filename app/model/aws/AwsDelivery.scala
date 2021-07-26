@@ -23,4 +23,5 @@ object AwsDeliverySlot {
 
 object AwsDelivery {
   implicit val adr: Reads[AwsDelivery] = Json.reads[AwsDelivery]
+  implicit val adw: OWrites[AwsDelivery] = Json.writes[AwsDelivery]
 }

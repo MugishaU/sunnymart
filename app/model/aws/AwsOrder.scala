@@ -1,7 +1,7 @@
 package model.aws
 
 import model.domain.{Address, ItemSelection}
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, OWrites, Reads}
 
 final case class AwsOrder(
     id: String,
@@ -15,4 +15,5 @@ final case class AwsOrder(
 
 object AwsOrder {
   implicit val aor: Reads[AwsOrder] = Json.reads[AwsOrder]
+  implicit val aow: OWrites[AwsOrder] = Json.writes[AwsOrder]
 }
