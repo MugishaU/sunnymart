@@ -1,21 +1,16 @@
 package db
 
 import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.dynamodbv2.{
-  AmazonDynamoDB,
-  AmazonDynamoDBClientBuilder
-}
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
 import com.amazonaws.services.dynamodbv2.document.ItemUtils
-import com.amazonaws.services.dynamodbv2.model.{
-  AttributeValue,
-  GetItemRequest,
-  ScanRequest
-}
+import com.amazonaws.services.dynamodbv2.model.{AttributeValue, DeleteItemResult, GetItemRequest, ScanRequest}
+import play.api.mvc._
 import play.api.libs.json._
 
 import scala.collection.immutable.HashMap
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec
 
 object DynamoDb {
   type DynamoDbResponse[T] = Either[Map[String, String], T]
@@ -146,5 +141,16 @@ object DynamoDb {
         Right(awsSuccessList.map(_.get))
     }
 
+  }
+
+  def deleteItem(item: String): Try[DeleteItemResult] = {
+    Try(
+      dynamoDbClient.deleteItem(
+        "api-events-refund",
+        HashMap(
+          "transactionId" -> new AttributeValue(item)
+        ).asJava
+      )
+    )
   }
 }

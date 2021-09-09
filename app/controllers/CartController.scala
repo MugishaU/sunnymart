@@ -8,15 +8,38 @@ import play.api.mvc._
 import scala.concurrent.ExecutionContext
 import model.api.{ApiItemSelection, ApiShoppingCart, ApiUpdateQuantity}
 import model.domain.{ItemSelection, ShoppingCart}
+import db.DynamoDb.deleteItem
 
 import java.util.UUID
 import java.time.LocalDateTime
+import scala.util.{Failure, Success}
 
 @Singleton
 class CartController @Inject() (
     cc: ControllerComponents
 )(implicit ex: ExecutionContext)
     extends AbstractController(cc) {
+
+  val allItems = Nil
+
+  def deleteApi(): Result = {
+    val item = "R20210907992DAC61B"
+
+    allItems.foreach(deleteItem)
+
+    Ok("done")
+
+//    v match {
+//      case Failure(exception) => InternalServerError(s"Failed to Delete $item")
+//      case Success(value) =>Ok(s"deleted $item")
+//    }
+  }
+
+  def refundDelete: Action[AnyContent] = {
+    Action {
+      deleteApi()
+    }
+  }
 
   def createCart: Action[AnyContent] = {
     Action { request =>

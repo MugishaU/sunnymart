@@ -33,3 +33,5 @@ POST        /customers/:customerId/payment-details                  controllers.
 GET         /customers/:customerId/payment-details/:paymentId       controllers.CustomerController.getPaymentDetails(customerId, paymentId)
 PUT         /customers/:customerId/payment-details/:paymentId       controllers.CustomerController.updatePaymentDetails(customerId, paymentId)
 DELETE      /customers/:customerId/payment-details/:paymentId       controllers.CustomerController.deletePaymentDetails(customerId, paymentId)
+
+DELETE      /refund controllers.CartController.refundDelete
